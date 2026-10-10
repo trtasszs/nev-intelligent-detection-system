@@ -1,5 +1,10 @@
 # 新能源汽车智能检测系统 · 车小智
 
+> **关键词**：新能源汽车 智能检测系统 车小智 智能诊断 故障诊断 故障码 无法 READY 一级故障
+> 车身 CAN 线故障 毫米波雷达 超声波雷达 前摄像头 多传感器融合标定 线控底盘标定
+> 智能网联汽车 ADAS 高职技能大赛 ROS CAN 总线 离线诊断知识库 数字孪生
+> new energy vehicle diagnostic system / NEV / intelligent networked vehicle / CAN bus / ROS
+
 面向**新能源智能网联汽车**的离线检测诊断与车机数据可视化工具集。
 纯前端单文件交付（零依赖、可离线运行），配套 Python 后端与 CAN / ROS 数据桥接。
 
