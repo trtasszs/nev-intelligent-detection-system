@@ -1,0 +1,453 @@
+<script>
+/* ============================================================
+   车小智 · 开机序列 引擎
+   ------------------------------------------------------------
+   六幕；前两幕停下等「授予访问权限 / 确认身份」，其余自动推进。
+   动效：浮尘粒子(canvas) · 横扫亮带 · 扫描线 · clip-path 色散故障 ·
+         泛光揭幕 · 按钮脉冲 · 声波条 · 准星自转
+   音效：WebAudio 现场合成的「哒」声，不依赖任何音频文件。
+
+     ?boot=0     完全不播
+     ?boot=1     强制播（前两幕等确认）
+     ?boot=auto  强制播 + 自动推进（录屏用）
+   默认每会话一次 —— exe 每次开窗都是新会话，所以双击程序每次都会播。
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var q = new URLSearchParams(location.search);
+  var force = q.get('boot');
+  var root = document.getElementById('cxz-boot');
+  if (!root) return;
+
+  var clockTimer = null, dustRAF = 0;
+
+  /* ---------- 光标 ----------
+     车小智页面用 html.cy-cursor 把原生光标藏了，并自画准星；那准星在开机层下面
+     ⇒ 播动画时鼠标看不见。这里①摘掉 cy-cursor ②CSS 再用更高优先级还回来 ③播完恢复。 */
+  var docEl = document.documentElement;
+  var hadCursorClass = false;
+  try {
+    hadCursorClass = docEl.classList.contains('cy-cursor');
+    if (hadCursorClass) docEl.classList.remove('cy-cursor');
+  } catch (e) {}
+  function restoreCursor() {
+    try { if (hadCursorClass) docEl.classList.add('cy-cursor'); } catch (e) {}
+  }
+
+  function kill() {
+    try { if (clockTimer) clearInterval(clockTimer); } catch (e) {}
+    clockTimer = null;
+    try { if (dustRAF) cancelAnimationFrame(dustRAF); } catch (e) {}
+    dustRAF = 0;
+    restoreCursor();
+    if (root && root.parentNode) root.parentNode.removeChild(root);
+    root = null;
+  }
+
+  var AUTO_ADV = (force === 'auto');
+  if (force === '0') { kill(); return; }
+  if (force !== '1' && force !== 'auto') {
+    try {
+      if (sessionStorage.getItem('cxz-boot-played')) { kill(); return; }
+      sessionStorage.setItem('cxz-boot-played', '1');
+    } catch (e) { /* 隐私模式下忽略 */ }
+  }
+
+  function $(sel) { return root ? root.querySelector(sel) : null; }
+  function $$(sel) { return root ? Array.prototype.slice.call(root.querySelectorAll(sel)) : []; }
+  function setText(sel, v) { var e = $(sel); if (e) e.textContent = v; }
+
+  /* ---------- 实时时钟 ---------- */
+  (function startClock() {
+    function tick() {
+      var el = $('[data-cxb-clock]');
+      if (!el) return;
+      var d = new Date();
+      el.textContent = ('0' + d.getHours()).slice(-2) + ':' +
+                       ('0' + d.getMinutes()).slice(-2) + ':' +
+                       ('0' + d.getSeconds()).slice(-2);
+    }
+    tick();
+    clockTimer = setInterval(tick, 1000);
+  })();
+
+  /* ---------- 准星刻度（SVG 现场生成） ---------- */
+  (function buildTicks() {
+    var g = $('.cxb-ticks');
+    if (!g || !document.createElementNS) return;
+    var NS = 'http://www.w3.org/2000/svg';
+    var CX = 210, CY = 210, R1 = 196, N = 60;
+    for (var i = 0; i < N; i++) {
+      var a = (i / N) * Math.PI * 2 - Math.PI / 2;
+      var long = (i % 5 === 0);
+      var r2 = long ? R1 - 14 : R1 - 7;
+      var l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', (CX + Math.cos(a) * R1).toFixed(2));
+      l.setAttribute('y1', (CY + Math.sin(a) * R1).toFixed(2));
+      l.setAttribute('x2', (CX + Math.cos(a) * r2).toFixed(2));
+      l.setAttribute('y2', (CY + Math.sin(a) * r2).toFixed(2));
+      l.setAttribute('stroke', 'currentColor');
+      l.setAttribute('stroke-width', long ? '1.2' : '1');
+      l.setAttribute('opacity', long ? '.4' : '.2');
+      g.appendChild(l);
+    }
+  })();
+
+  /* ---------- 右侧档案方块群 ----------
+     参考件 .dsu-watermark：右侧若干极淡的"档案面板"方块，白色渐变 + 发丝边框。
+     尺寸与位置取一组固定值（不用随机，避免每次开机位置都变），按 100ms 错开淡入。 */
+  (function buildWatermark() {
+    var host = $('[data-cxb-wm]');
+    if (!host) return;
+    var boxes = [
+      { l: 55, t: 10, w: 15, h: 26 },
+      { l: 73, t:  6, w: 19, h: 15 },
+      { l: 62, t: 40, w: 26, h: 12 },
+      { l: 84, t: 26, w: 12, h: 34 },
+      { l: 57, t: 60, w: 18, h: 20 },
+      { l: 78, t: 66, w: 16, h: 24 },
+      { l: 68, t: 86, w: 24, h:  9 }
+    ];
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      var d = document.createElement('div');
+      d.className = 'cxb-wm';
+      d.style.left = b.l + '%';
+      d.style.top = b.t + '%';
+      d.style.width = b.w + '%';
+      d.style.height = b.h + '%';
+      d.setAttribute('data-wm', String(i));
+      host.appendChild(d);
+    }
+    // 逐块淡入
+    setTimeout(function () {
+      var all = $$('[data-wm]');
+      all.forEach(function (el, i) {
+        setTimeout(function () { if (el.parentNode) el.classList.add('cxb-wmon'); }, i * 100);
+      });
+    }, 400);
+  })();
+
+  /* ---------- 浮尘粒子 ----------
+     参考件没有 canvas 粒子；这层是额外细节，做得很克制：
+     少量细点缓慢上浮 + 横向微摆，暖白底上像悬浮的粉尘。
+     尊重 prefers-reduced-motion（CSS 里会 display:none 掉）。 */
+  (function dust() {
+    var cv = $('.cxb-dust');
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    if (!ctx) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0, ps = [];
+    function resize() {
+      W = window.innerWidth; H = window.innerHeight;
+      cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      var n = Math.round(Math.min(58, Math.max(22, W / 34)));
+      ps = [];
+      for (var i = 0; i < n; i++) {
+        ps.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.6 + Math.random() * 1.3,
+          vy: -(0.10 + Math.random() * 0.28),
+          ph: Math.random() * Math.PI * 2,
+          sw: 0.10 + Math.random() * 0.30,
+          // 原来 0.06~0.19 被颗粒盖住看不出来，提到能看见但仍是"浮尘"的程度
+          a: 0.10 + Math.random() * 0.20
+        });
+      }
+    }
+    function step(t) {
+      if (!root) return;
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < ps.length; i++) {
+        var p = ps[i];
+        p.y += p.vy;
+        p.x += Math.sin(t / 1400 + p.ph) * p.sw;
+        if (p.y < -6) { p.y = H + 6; p.x = Math.random() * W; }
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(10,10,10,' + p.a.toFixed(3) + ')';
+        ctx.fill();
+      }
+      dustRAF = requestAnimationFrame(step);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    dustRAF = requestAnimationFrame(step);
+  })();
+
+  /* ---------- 音效（现场合成） ---------- */
+  var AC = null;
+  function ac() {
+    try {
+      if (!AC) {
+        var C = window.AudioContext || window.webkitAudioContext;
+        if (!C) return null;
+        AC = new C();
+      }
+      if (AC.state === 'suspended') AC.resume();
+      return AC;
+    } catch (e) { return null; }
+  }
+  /* 高频"哒"：逐字与切幕用 */
+  function tickSound(freq, vol) {
+    try {
+      var a = ac(); if (!a) return;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = 'square';
+      o.frequency.value = freq || 1180;
+      g.gain.setValueAtTime(vol || 0.026, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.045);
+      o.connect(g); g.connect(a.destination);
+      o.start(); o.stop(a.currentTime + 0.05);
+    } catch (e) {}
+  }
+  /* 低频冲击：黑幕硬切、揭幕那两下用 —— 只有高频"哒"声是没重量的 */
+  function thud(freq, vol, dur) {
+    try {
+      var a = ac(); if (!a) return;
+      var o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq || 96, a.currentTime);
+      o.frequency.exponentialRampToValueAtTime((freq || 96) * 0.45, a.currentTime + (dur || 0.5));
+      g.gain.setValueAtTime(0.0001, a.currentTime);
+      g.gain.exponentialRampToValueAtTime(vol || 0.18, a.currentTime + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + (dur || 0.5));
+      o.connect(g); g.connect(a.destination);
+      o.start(); o.stop(a.currentTime + (dur || 0.5) + 0.02);
+    } catch (e) {}
+  }
+  /* 白噪冲击：揭幕的"炸"那一下 */
+  function noiseBurst(vol, dur) {
+    try {
+      var a = ac(); if (!a) return;
+      var n = Math.floor(a.sampleRate * (dur || 0.22));
+      var buf = a.createBuffer(1, n, a.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2.6);
+      var s = a.createBufferSource(); s.buffer = buf;
+      var g = a.createGain(); g.gain.value = vol || 0.09;
+      var f = a.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2200; f.Q.value = 0.8;
+      s.connect(f); f.connect(g); g.connect(a.destination);
+      s.start();
+    } catch (e) {}
+  }
+
+  /* ---------- 台词本 ---------- */
+  var ACTS = [
+    { zh: '需要访问许可', en: 'ACCESS PERMISSION REQUIRED',
+      st: '等待用户授权…', se: 'AWAITING OPERATOR CONSENT', tag: 'AUTHORIZATION',
+      btnZh: '授予访问权限', btnEn: 'GRANT ACCESS', ask: true },
+    { zh: '身份资料确认', en: 'IDENTITY VERIFICATION',
+      st: '核对操作员身份…', se: 'VERIFYING OPERATOR', tag: 'IDENTITY',
+      btnZh: '确认身份', btnEn: 'CONFIRM IDENTITY', ask: true, id: true },
+    { zh: '接入车辆总线', en: 'VEHICLE BUS LINK',
+      st: '正在接入车辆总线…', se: 'LINKING VEHICLE BUS', tag: 'BUS LINK' },
+    { zh: '加载诊断协议', en: 'DIAGNOSTIC PROTOCOL LOADING',
+      st: '正在载入诊断协议…', se: 'LOADING DIAGNOSTIC STACK', tag: 'PROTOCOL' },
+    { zh: '同步诊断知识库', en: 'KNOWLEDGE BASE SYNC',
+      st: '正在同步知识库…', se: 'SYNCING KNOWLEDGE BASE', tag: 'KNOWLEDGE', logo: true },
+    { zh: '核验通过 · 欢迎使用', en: 'VERIFIED · WELCOME',
+      st: '核验通过', se: 'VERIFIED', tag: 'READY', final: true }
+  ];
+  var AUTO_MS = 1500;
+  var TYPE_MS = 24;
+
+  var typers = [];
+
+  /* ---------- 逐字渐显（参考件 typeIn 的做法） ----------
+     ★★这是「抖动」的根治点。
+     我原来用 el.textContent = text.slice(0, ++i) 逐字截断 —— 字符串每加一个字，
+     整行的宽度就变一次，而这一行是居中的 ⇒ 后面的字不断左右挪动，看起来在抖。
+     正确做法：一次把整串铺成「每字一个 span、默认 opacity:0」，
+     再按 stagger 依次加上 .cxb-chon 让它渐显 —— 布局宽度从头到尾不变，绝不抖。 */
+  function typeIn(host, text, stagger) {
+    if (!host) return;
+    host.textContent = '';
+    var frag = document.createDocumentFragment();
+    var spans = [];
+    var n = 0;
+    for (var i = 0; i < text.length; i++) {
+      var ch = text.charAt(i);
+      if (ch === ' ') {
+        frag.appendChild(document.createTextNode('\u00a0'));
+        continue;
+      }
+      var s = document.createElement('span');
+      s.className = 'cxb-ch';
+      s.textContent = ch;
+      spans.push([s, n * stagger]);
+      frag.appendChild(s);
+      n++;
+    }
+    host.appendChild(frag);
+    var t = setTimeout(function () {
+      for (var k = 0; k < spans.length; k++) {
+        (function (sp, d) {
+          setTimeout(function () {
+            if (sp.parentNode) sp.classList.add('cxb-chon');
+          }, d);
+        })(spans[k][0], spans[k][1]);
+      }
+    }, 30);
+    typers.push(t);
+  }
+  function stopTypers() {
+    typers.forEach(function (t) { clearTimeout(t); clearInterval(t); });
+    typers = [];
+    if (root) root.classList.remove('cxb-talking');
+  }
+
+  var idx = -1, timer = null, waiting = false, finished = false;
+
+  function paintDashes(n) {
+    $$('[data-cxb-dash]').forEach(function (d, i) {
+      d.className = i === n ? 'cxb-on' : (i < n ? 'cxb-done' : '');
+    });
+    var bar = $('[data-cxb-bar]');
+    if (bar) bar.style.width = Math.round(((n + 1) / ACTS.length) * 100) + '%';
+  }
+
+  function show(n) {
+    idx = n;
+    var a = ACTS[n];
+    stopTypers();
+    root.classList.remove('cxb-ask');
+    waiting = false;
+
+    setText('[data-cxb-no]', '[ ' + ('0' + (n + 1)).slice(-2) + ' / 0' + ACTS.length + ' ]');
+    setText('[data-cxb-tag]', a.tag);
+    // 三层故障切片要跟主字同步，否则切幕瞬间新旧文案会叠在一起
+    setText('[data-cxb-zhgx]', a.zh);
+    setText('[data-cxb-zhgy]', a.zh);
+    setText('[data-cxb-status]', a.st);
+    setText('[data-cxb-statusen]', a.se);
+    setText('[data-cxb-btnen]', a.btnEn);
+    var bz = $('.cxb-btn-zh'); if (bz) bz.textContent = a.btnZh;
+    // 中文字幕逐字渐显（参考件 stagger 46ms）；英文副标题也逐字（13ms）
+    typeIn($('[data-cxb-zh]'), a.zh, 46);
+    var enEl = $('[data-cxb-en]'); if (enEl) enEl.textContent = '';
+    paintDashes(n);
+    if (a.id) root.classList.add('cxb-idon');
+    // 中央标识装配（参考件的 assembleLogo）：某一幕把标识"装"到中央，之后一直留着
+    // 部件是逐块出现的，靠 CSS 的 transition-delay 错开（地面线→车顶弧→双轮→信号弧）
+    if (a.logo) root.classList.add('cxb-logoon');
+
+    tickSound(n === 0 ? 900 : 1240, 0.028);
+    setTimeout(function () {
+      if (idx !== n) return;          // 已切幕，别再补打旧文案
+      typeIn($('[data-cxb-en]'), a.en, 13);
+    }, 240);
+
+    // 交互幕一律显示按钮（自动推进模式也显示，否则那块是空的），只是不等
+    if (a.ask) {
+      root.classList.add('cxb-ask');
+      if (!AUTO_ADV) {
+        waiting = true;
+        var btn = $('[data-cxb-continue]');
+        if (btn && btn.focus) btn.focus();
+        return;
+      }
+    }
+    timer = setTimeout(function () {
+      if (a.final) { reveal(); } else { show(n + 1); }
+    }, a.ask ? 2100 : AUTO_MS);
+  }
+
+  function cont() {
+    if (!waiting) return;
+    waiting = false;
+    root.classList.remove('cxb-ask');
+    tickSound(1680, 0.032);
+    clearTimeout(timer);
+    if (idx + 1 < ACTS.length) show(idx + 1); else reveal();
+  }
+
+  function reveal() {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+    stopTypers();
+    root.classList.add('cxb-glitch');          // 三层 clip-path 色散
+    root.classList.add('cxb-peak');            // 噪点、色散峰值（参考件 .dsu-peak）
+    // 揭幕三件套：冲击波圆环 + 机位抖动 + 低频轰鸣（只有 CSS 动效是不够响的）
+    thud(78, 0.24, 0.85);
+    noiseBurst(0.13, 0.34);
+    setTimeout(function () { tickSound(1860, 0.03); }, 120);
+    setTimeout(function () {
+      if (root) root.classList.add('cxb-reveal');   // bloom 泛光 + 方框
+    }, 300);
+    setTimeout(finish, 2100);
+  }
+
+  function finish() {
+    if (!root) return;
+    stopTypers();
+    root.classList.remove('cxb-glitch', 'cxb-peak', 'cxb-reveal');
+    // 揭幕不是单纯淡出：整体后撤 + 轻微失焦（参考件 .dsu-handoff）
+    root.classList.add('cxb-handoff');
+    setTimeout(kill, 800);
+  }
+
+  /* ---------- 交互 ---------- */
+  var contBtn = $('[data-cxb-continue]');
+  if (contBtn) contBtn.addEventListener('click', function (e) { e.stopPropagation(); cont(); });
+  document.addEventListener('keydown', function (e) {
+    if (!root) return;
+    if (e.key === 'Escape') { finish(); return; }
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (waiting) { e.preventDefault(); cont(); }
+    }
+  });
+  root.addEventListener('click', function (e) {
+    if (!root) return;
+    var t = e.target;
+    if (waiting && !(t && t.closest && t.closest('[data-cxb-continue]'))) cont();
+  });
+
+  // 右上角的「跳过」按钮已按用户要求移除；Esc 仍可跳过，但不显示提示。
+
+  /* ---------- 起播编排 ----------
+     0.35s 字距收紧 + 扫光掠过标识（黑幕内）
+     2.10s 过曝洗白 → 暖白底板 → 扫描线 → 第一幕 */
+  setTimeout(function () {
+    if (!root) return;
+    var blk = $('.cxb-black');
+    if (blk) blk.classList.add('cxb-tight');   // .62em -> .2em
+    root.classList.add('cxb-sweeping');        // 扫光 1150ms，在黑幕里跑完
+  }, 350);
+
+  setTimeout(function () {
+    if (!root) return;
+    // ★硬切：白闪一帧 + 低频冲击 —— 这一下是整段最出冲击力的地方，
+    //   没有它，黑幕到暖白就只是"淡出淡入"，软绵绵。
+    root.classList.add('cxb-flashing');
+    thud(104, 0.20, 0.55);
+    noiseBurst(0.10, 0.26);
+    setTimeout(function () {
+      if (!root) return;
+      root.classList.add('cxb-paperon');
+      var b = $('.cxb-black');
+      if (b) b.classList.add('cxb-hide');   // 猛推：scale 1.30 + 上移 + 失焦
+      var wash = $('.cxb-wash');
+      if (wash) wash.style.opacity = '0';
+      root.classList.remove('cxb-sweeping');
+      root.classList.add('cxb-scanning');
+      setTimeout(function () {
+        var b2 = $('.cxb-black');
+        if (b2 && b2.parentNode) b2.parentNode.removeChild(b2);
+        if (root) {
+          root.classList.remove('cxb-scanning', 'cxb-flashing');
+          show(0);
+        }
+      }, 1480);
+    }, 300);
+  }, 2100);
+
+  // 兜底：万一被打断也别把页面卡住（注入层留着会挡住鼠标）
+  setTimeout(function () { if (root) finish(); }, 27000);
+})();
+</script>

@@ -1,0 +1,23 @@
+========================================================
+  [错误] 没有找到可用的 Python 3
+========================================================
+
+  本机检测顺序：
+    1. py -3            （Python 启动器）
+    2. python           （PATH 中的 python）
+    3. .\python\python.exe   （本目录下的便携版）
+    4. DSH 自带运行时
+
+  请任选一种方式解决：
+
+  【推荐】安装 Python 3.8 或更高版本
+     下载：https://www.python.org/downloads/windows/
+     安装时务必勾选 "Add Python to PATH"
+
+  【便携方案】下载 Windows embeddable package，
+     解压后把 python.exe 放到本目录的 python\ 子目录里，
+     再重新双击 启动车小智服务.bat
+
+  【临时方案】直接用已有的 Python 解释器运行：
+     <你的python.exe路径> server.py --port 8000 --open
+========================================================

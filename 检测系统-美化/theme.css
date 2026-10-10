@@ -1,0 +1,370 @@
+/* ============================================================================
+   新能源汽车智能检测系统 · 仪器化看板主题层
+   ----------------------------------------------------------------------------
+   设计目标：把"普通的深色后台"改造成"检测仪器台"
+   设计语言：
+     · 几何 —— 直角 + 切角、1px 发丝线，四角括号（用 8 层背景渐变，不占位）
+     · 构件 —— 仪表条、模块编号、序列号、状态点、刻度尺、等宽字读数
+     · 层级 —— 辉光只给"热"元素（状态点 / 主按钮 / 激活项），其余靠线条精度与留白
+     · 动效 —— 只做局部或一次性：悬停、入场、数字滚动、时钟跳动
+   红线（用户既定要求，必须遵守）：
+     不做横穿整屏、全屏覆盖、持续闪烁的效果；动效要么用户触发，要么一次性。
+   ========================================================================== */
+:root {
+    --cx-cy: #3D9BFF;
+    --cx-cy-l: #E8E8EC;
+    --cx-cy-d: #1E5C99;
+    --cx-gr: #2EE59D;
+    --cx-am: #D4762A;
+    --cx-rd: #D93A3A;
+    --cx-bg0: #070709;
+    --cx-hair: rgba(158, 168, 182, .24);
+    --cx-hair-s: rgba(158, 168, 182, .13);
+    --cx-tx: #E8E8EC;
+    --cx-tx-m: #9A9AA5;
+    --cx-tx-l: #5A5A66;
+    --cx-mono: "JetBrains Mono", Consolas, Menlo, monospace;
+    --cx-ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+/* ---------------------------------------------------------------- 全局底 */
+body {
+    background-color: var(--cx-bg0) !important;
+    background-image:
+        radial-gradient(900px 460px at 84% -8%, rgba(158, 168, 182, 0.070), transparent 62%),
+        radial-gradient(700px 420px at 4% 100%, rgba(46, 229, 157, .045), transparent 62%),
+        linear-gradient(rgba(158, 168, 182, .022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(158, 168, 182, .022) 1px, transparent 1px);
+    background-size: auto, auto, 48px 48px, 48px 48px;
+    /* 注意：不要用 background-attachment: fixed —— 与内部滚动容器叠加会持续整屏重绘，严重掉帧 */
+    color: var(--cx-tx);
+}
+
+/* 主内容区透明，让底层网格透出来 */
+main.bg-dark-300 { background-color: transparent !important; }
+
+/* 面板底色统一为"仪表壳" */
+.bg-dark-400 { background-color: rgb(24, 19, 8, .92) !important; }
+.bg-dark-200 { background-color: rgb(41, 32, 14, .92) !important; }
+.bg-dark-100 { background-color: rgb(54, 43, 20, .94) !important; }
+.bg-dark-500 { background-color: var(--cx-bg0) !important; }
+
+/* ---------------------------------------------------------------- 滚动条 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #09090B; }
+::-webkit-scrollbar-thumb { background: #1D1D22; border: 2px solid #09090B; }
+::-webkit-scrollbar-thumb:hover { background: var(--cx-cy-d); }
+
+::selection { background: rgba(158, 168, 182, .28); color: #FFF8EA; }
+
+/* ---------------------------------------------------------------- 顶栏 */
+header.bg-dark-400 {
+    background-color: rgb(20, 15, 6, .94) !important;
+    /* 不要加 backdrop-filter：与滚动容器 + 大面积背景叠加会造成持续昂贵合成，实测会把页面卡死 */
+    border-bottom: 1px solid var(--cx-hair) !important;
+    box-shadow: 0 16px 44px -34px rgba(158, 168, 182, .95);
+}
+#page-title {
+    font-family: var(--cx-mono);
+    letter-spacing: .06em;
+}
+
+/* ---------------------------------------------------------------- 仪表条（JS 注入） */
+.cx-strip {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0 22px;
+    padding: 7px 24px;
+    border-top: 1px solid var(--cx-hair-s);
+    background: linear-gradient(90deg, rgba(158, 168, 182, 0.045), rgba(158, 168, 182, 0.000) 42%);
+    font-family: var(--cx-mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--cx-tx-l);
+    white-space: nowrap;
+    overflow: hidden;
+}
+.cx-strip__i { display: inline-flex; align-items: center; gap: 7px; }
+.cx-strip__i b { color: var(--cx-cy-l); font-weight: 500; }
+.cx-strip__i em { color: var(--cx-gr); font-style: normal; }
+.cx-strip__i i {
+    display: inline-block;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--cx-gr);
+    box-shadow: 0 0 8px var(--cx-gr);
+}
+.cx-strip__ruler {
+    flex: 1 1 120px;
+    height: 7px;
+    min-width: 60px;
+    background: repeating-linear-gradient(90deg,
+        var(--cx-hair) 0 1px, transparent 1px 11px) left bottom/100% 5px no-repeat;
+}
+
+/* ---------------------------------------------------------------- 卡片 = 仪表面板 */
+.card {
+    position: relative;
+    border-radius: 0 !important;
+    background-image:
+        /* 四角括号 */
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        /* 顶部高光 */
+        linear-gradient(180deg, rgba(158, 168, 182, 0.055), rgba(158, 168, 182, 0.000) 42%) !important;
+    background-size:
+        14px 1px, 1px 14px, 14px 1px, 1px 14px,
+        14px 1px, 1px 14px, 14px 1px, 1px 14px,
+        100% 100% !important;
+    background-position:
+        left top, left top, right top, right top,
+        left bottom, left bottom, right bottom, right bottom,
+        left top !important;
+    background-repeat: no-repeat !important;
+    box-shadow: inset 0 1px 0 rgba(158, 168, 182, .16),
+                inset 0 0 0 1px rgba(158, 168, 182, .04);
+    transition: border-color .3s var(--cx-ease),
+                box-shadow .35s var(--cx-ease),
+                transform .35s var(--cx-ease);
+}
+/* 悬停：聚光跟随光标 + 描边点亮 */
+.card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(260px circle at var(--cx-mx, 50%) var(--cx-my, 50%),
+                rgba(158, 168, 182, 0.100), transparent 68%);
+    transition: opacity .25s;
+}
+.card:hover::before { opacity: 1; }
+.card:hover {
+    border-color: rgba(158, 168, 182, .38) !important;
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgb(255, 226, 168, .35),
+                0 0 0 1px rgba(158, 168, 182, .14),
+                0 26px 54px -34px rgba(158, 168, 182, .75);
+}
+
+/* 含图表的卡片：底部加测量刻度尺
+   注意：用 JS 打上的 .cx-chart 类，而不是 :has(canvas) ——
+   :has() 每次 DOM 变化都会触发全文档范围的匹配重算，配合数字滚动会把主线程打满。 */
+.card.cx-chart {
+    background-image:
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        linear-gradient(rgba(158, 168, 182, .72), rgba(158, 168, 182, .72)),
+        repeating-linear-gradient(90deg, rgba(158, 168, 182, .30) 0 1px, transparent 1px 13px),
+        linear-gradient(180deg, rgba(158, 168, 182, 0.055), rgba(158, 168, 182, 0.000) 42%) !important;
+    background-size:
+        14px 1px, 1px 14px, 14px 1px, 1px 14px,
+        14px 1px, 1px 14px, 14px 1px, 1px 14px,
+        100% 6px, 100% 100% !important;
+    background-position:
+        left top, left top, right top, right top,
+        left bottom, left bottom, right bottom, right bottom,
+        left bottom, left top !important;
+}
+
+/* 角标序列号（JS 注入） */
+.cx-sn {
+    position: absolute;
+    top: 9px; right: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--cx-mono);
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: var(--cx-tx-l);
+    opacity: .65;
+    pointer-events: none;
+}
+.cx-sn i {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--cx-gr);
+    box-shadow: 0 0 7px var(--cx-gr);
+}
+
+/* ---------------------------------------------------------------- 侧边导航 */
+a[data-target] {
+    position: relative;
+    transition: background .25s var(--cx-ease), color .25s var(--cx-ease);
+}
+a[data-target]::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 2px;
+    background: var(--cx-cy);
+    box-shadow: 0 0 10px var(--cx-cy);
+    transform: scaleY(0);
+    transform-origin: 50% 0;
+    transition: transform .28s var(--cx-ease);
+}
+a[data-target]:hover::before { transform: scaleY(1); }
+a[data-target]:hover {
+    background-color: rgba(158, 168, 182, 0.055) !important;
+    color: #F2F2F5 !important;
+}
+.sidebar-active span, .sidebar-active i { color: #E8E8EC !important; }
+.sidebar-active {
+    box-shadow: inset 0 0 0 1px rgba(158, 168, 182, 0.100),
+                inset 26px 0 34px -26px rgba(158, 168, 182, .72);
+}
+
+/* ---------------------------------------------------------------- 按钮 */
+.btn-primary {
+    border-radius: 0 !important;
+    background-image: linear-gradient(180deg, #3D9BFF, #1C4666) !important;
+    box-shadow: inset 0 1px 0 rgb(255, 226, 168, .45),
+                0 10px 26px -16px rgba(158, 168, 182, .95);
+    position: relative;
+    overflow: hidden;
+}
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: -20%; bottom: -20%;
+    left: -60%;
+    width: 38%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .28), transparent);
+    transform: skewX(-20deg);
+    transition: left .6s var(--cx-ease);
+    pointer-events: none;
+}
+.btn-primary:hover::after { left: 130%; }
+.btn-secondary { border-radius: 0 !important; }
+.btn-secondary:hover { border-color: rgba(158, 168, 182, .35) !important; }
+.btn-danger { border-radius: 0 !important; }
+
+/* ---------------------------------------------------------------- 表单 */
+.input-field {
+    border-radius: 0 !important;
+    background-color: rgba(7, 7, 9, .82) !important;
+    caret-color: var(--cx-cy);
+}
+.input-field::placeholder { color: #45454F; }
+.input-field:focus {
+    border-color: rgba(158, 168, 182, .6) !important;
+    box-shadow: 0 0 0 2px rgba(158, 168, 182, .13), 0 0 20px -8px rgba(158, 168, 182, .85);
+}
+
+/* ---------------------------------------------------------------- 徽标 */
+.badge {
+    border-radius: 0 !important;
+    font-family: var(--cx-mono);
+    letter-spacing: .06em;
+}
+
+/* ---------------------------------------------------------------- 表格 */
+.table-header {
+    font-family: var(--cx-mono) !important;
+    letter-spacing: .16em !important;
+    color: var(--cx-tx-l) !important;
+    border-bottom: 1px solid var(--cx-hair) !important;
+    background: rgba(158, 168, 182, 0.028);
+}
+tbody tr {
+    transition: background .22s, box-shadow .22s;
+}
+tbody tr:hover {
+    background-color: rgba(158, 168, 182, 0.050) !important;
+    box-shadow: inset 2px 0 0 var(--cx-cy);
+}
+
+/* ---------------------------------------------------------------- 章节号水印
+   已弃用：绝对定位的大号数字会压在下方的卡片上（属于"挡视线"），
+   模块编号改由顶部仪表条承载。此处保留定义仅为记录设计取舍。
+.cx-watermark { ... }
+---------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------------------- 入场揭示（一次性） */
+.cx-js [data-cx] {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .6s var(--cx-ease), transform .6s var(--cx-ease);
+}
+.cx-js [data-cx].cx-in {
+    opacity: 1;
+    transform: none;
+}
+
+/* 页面切换时的一次性淡入 */
+@keyframes cx-page-in {
+    0% { opacity: 0; transform: translateY(8px) }
+    100% { opacity: 1; transform: none }
+}
+.page-content.cx-entering { animation: cx-page-in .3s var(--cx-ease) 1; }
+
+/* ---------------------------------------------------------------- 莫代尔/通知 */
+#notification, .notification { border-radius: 0 !important; }
+
+/* 触屏与小屏降级 */
+@media (max-width: 768px) {
+    .cx-strip__ruler { display: none; }
+}
+
+/* ---------------------------------------------------------------- 既有缺陷修正
+   车辆信息管理页首行的标题「车辆状态监控」会被同行的下拉框挤压而折行
+   （原页面 .input-field 带 w-full，与 select 自身的 w-64 冲突）。只让标题不换行即可。 */
+/* 用 .page-content h3 而不是 :first-child —— 实时数据面板会插到页面首位，
+   first-child 选择器会随之失效。 */
+.page-content h3 { white-space: nowrap; flex: 0 0 auto; }
+.page-content select { flex: 0 0 auto; }
+
+/* ---------------------------------------------------------------- 既有缺陷修正（折线溢出）
+   页面自带的 sparkline 用 canvas.offsetWidth 取尺寸，但画布没有 CSS 约束，
+   offsetWidth 返回的是 canvas 默认宽度 300px（而非容器的 96px），
+   于是画布被写成 300x150 冲出卡片。给它钉住尺寸即可，
+   JS 随后读到的 offsetWidth 就是容器的真实宽度，2x 缩放绘制也恢复正常。 */
+.sparkline {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* ===== 安全绿 · 发亮点缀（正常 / 在线 / 通过 / 安全） ===== */
+:root {
+    --cx-ok: #2EE59D;
+    --cx-ok-d: #1AA876;
+    --cx-ok-glow: rgba(46, 229, 157, .78);
+    --cx-ok-soft: rgba(46, 229, 157, .34);
+}
+/* 状态点：绿芯 + 外发光 */
+.cx-live__dot, .cx-livebadge i, .cx-tile__dot {
+    background: var(--cx-ok) !important;
+    box-shadow: 0 0 8px var(--cx-ok-glow), 0 0 18px var(--cx-ok-soft) !important;
+}
+.cx-strip-live__i em {
+    color: var(--cx-ok) !important;
+    text-shadow: 0 0 10px var(--cx-ok-soft);
+}
+/* 正向文字：绿 + 轻发光 */
+.text-secondary, .text-green-400, .text-emerald-400, .text-teal-400 {
+    color: var(--cx-ok) !important;
+    text-shadow: 0 0 10px var(--cx-ok-soft);
+}
+/* 正向底块：绿晕 */
+.bg-green-500, .bg-emerald-500, .bg-secondary {
+    box-shadow: 0 0 16px var(--cx-ok-soft);
+}
+/* 在线 / 通过 徽标 */
+.cx-ok, .cx-livebadge[data-ok] {
+    color: var(--cx-ok) !important;
+    text-shadow: 0 0 10px var(--cx-ok-soft);
+}

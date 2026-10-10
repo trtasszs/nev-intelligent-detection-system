@@ -1,0 +1,3138 @@
+<html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新能源汽车智能检测系统 - 深色数据看板</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <!-- 统一的 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        warning: '#F59E0B',
+                        danger: '#EF4444',
+                        dark: {
+                            100: '#1E293B',
+                            200: '#172033',
+                            300: '#0F172A',
+                            400: '#0B1120',
+                            500: '#070D19'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .transition-all {
+                transition-property: all;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 150ms;
+            }
+            .sidebar-active {
+                @apply bg-dark-200 border-l-2 border-primary;
+            }
+            .sidebar-icon {
+                @apply mr-3 text-lg;
+            }
+            .btn-primary {
+                @apply bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 transition-all;
+            }
+            .btn-secondary {
+                @apply bg-dark-200 hover:bg-dark-100 text-gray-300 font-medium py-2 px-4 transition-all border border-gray-700;
+            }
+            .btn-danger {
+                @apply bg-danger hover:bg-red-600 text-white font-medium py-2 px-4 transition-all;
+            }
+            .input-field {
+                @apply w-full px-4 py-2 bg-dark-200 border border-gray-700 text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary;
+            }
+            .table-header {
+                @apply px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider;
+            }
+            .table-cell {
+                @apply px-6 py-4 whitespace-nowrap text-sm text-gray-300;
+            }
+            .card {
+                @apply bg-dark-200 border border-gray-700 p-6;
+            }
+            .badge {
+                @apply px-2 py-1 text-xs font-semibold;
+            }
+            .badge-success {
+                @apply bg-green-900/30 text-green-400 border border-green-800;
+            }
+            .badge-warning {
+                @apply bg-yellow-900/30 text-yellow-400 border border-yellow-800;
+            }
+            .badge-danger {
+                @apply bg-red-900/30 text-red-400 border border-red-800;
+            }
+            .card-gradient-border {
+                position: relative;
+                border-radius: 0;
+                background: linear-gradient(to right, #0F172A, #0F172A), linear-gradient(to right, #3B82F6, #8B5CF6);
+                background-clip: padding-box, border-box;
+                background-origin: padding-box, border-box;
+                border: 1px solid transparent;
+            }
+            .card-accent-border {
+                border-left: 2px solid #3B82F6;
+            }
+            .text-gradient {
+                @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark-300 font-sans text-gray-300">
+    <!-- 背景动画层 -->
+    <div id="particleBackground" class="fixed inset-0 z-0 opacity-20"></div>
+
+    <div class="relative z-10 flex h-screen overflow-hidden">
+        <!-- 侧边导航栏 -->
+        <div class="w-64 bg-dark-400 border-r border-gray-800 shadow-lg hidden md:block">
+            <div class="flex items-center justify-center h-16 border-b border-gray-800">
+                <div class="flex items-center">
+                    <div class="p-2 rounded-sm bg-primary bg-opacity-20 text-primary mr-2">
+                        <i class="fa fa-car fa-lg"></i>
+                    </div>
+                    <h1 class="text-xl font-bold text-white">新能源汽车检测</h1>
+                </div>
+            </div>
+            <nav class="mt-5">
+                <ul>
+                    <li>
+                        <a href="#dashboard" class="flex items-center px-6 py-3 sidebar-active" data-target="dashboard">
+                            <i class="fa fa-dashboard sidebar-icon"></i>
+                            <span>系统概览</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#vehicles" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="vehicles">
+                            <i class="fa fa-car sidebar-icon"></i>
+                            <span>车辆信息管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#iot" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="iot">
+                            <i class="fa fa-wifi sidebar-icon"></i>
+                            <span>智能网联管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#detection" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="detection">
+                            <i class="fa fa-check-square-o sidebar-icon"></i>
+                            <span>检测记录管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#battery" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="battery">
+                            <i class="fa fa-bolt sidebar-icon"></i>
+                            <span>电池管理</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#statistics" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="statistics">
+                            <i class="fa fa-bar-chart sidebar-icon"></i>
+                            <span>数据分析</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#protocol" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="protocol">
+                            <i class="fa fa-exchange sidebar-icon"></i>
+                            <span>通信协议及数据导入</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#settings" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all" data-target="settings">
+                            <i class="fa fa-cog sidebar-icon"></i>
+                            <span>系统设置</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- 移动端导航菜单按钮 -->
+        <div class="md:hidden fixed bottom-4 right-4 z-50">
+            <button id="mobile-menu-button" class="bg-primary text-white p-3 shadow-lg">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="fixed inset-0 bg-dark-500 bg-opacity-90 z-40 hidden">
+            <div class="bg-dark-400 w-64 h-full transform transition-transform duration-300 -translate-x-full" id="mobile-menu-content">
+                <div class="flex items-center justify-between p-4 border-b border-gray-800">
+                    <div class="flex items-center">
+                        <div class="p-2 rounded-sm bg-primary bg-opacity-20 text-primary mr-2">
+                            <i class="fa fa-car"></i>
+                        </div>
+                        <h1 class="text-lg font-bold text-white">新能源汽车检测</h1>
+                    </div>
+                    <button id="mobile-menu-close" class="text-gray-400">
+                        <i class="fa fa-times"></i>
+                    </button>
+                </div>
+                <nav class="mt-5">
+                    <ul>
+                        <li>
+                            <a href="#dashboard" class="flex items-center px-6 py-3 sidebar-active mobile-nav-item" data-target="dashboard">
+                                <i class="fa fa-dashboard sidebar-icon"></i>
+                                <span>系统概览</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#vehicles" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="vehicles">
+                                <i class="fa fa-car sidebar-icon"></i>
+                                <span>车辆信息管理</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#iot" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="iot">
+                                <i class="fa fa-wifi sidebar-icon"></i>
+                                <span>智能网联管理</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#detection" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="detection">
+                                <i class="fa fa-check-square-o sidebar-icon"></i>
+                                <span>检测记录管理</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#battery" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="battery">
+                                <i class="fa fa-bolt sidebar-icon"></i>
+                                <span>电池管理</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#statistics" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="statistics">
+                                <i class="fa fa-bar-chart sidebar-icon"></i>
+                                <span>数据分析</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#protocol" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="protocol">
+                                <i class="fa fa-exchange sidebar-icon"></i>
+                                <span>通信协议及数据导入</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#settings" class="flex items-center px-6 py-3 hover:bg-dark-200 transition-all mobile-nav-item" data-target="settings">
+                                <i class="fa fa-cog sidebar-icon"></i>
+                                <span>系统设置</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- 顶部导航栏 -->
+            <header class="bg-dark-400 border-b border-gray-800 z-10">
+                <div class="flex items-center justify-between h-16 px-6">
+                    <div class="flex items-center">
+                        <button id="sidebar-toggle" class="text-gray-400 focus:outline-none md:hidden">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <h2 id="page-title" class="ml-4 text-lg font-medium text-white">系统概览</h2>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <input type="text" placeholder="搜索..." class="input-field py-1 px-3 text-sm w-40 lg:w-64">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <i class="fa fa-search text-gray-500"></i>
+                            </div>
+                        </div>
+                        <div class="relative">
+                            <button class="flex items-center text-gray-300 focus:outline-none">
+                                <span class="mr-2 hidden md:inline">管理员</span>
+                                <i class="fa fa-user-circle text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 内容区域 -->
+            <main class="flex-1 overflow-y-auto bg-dark-300 p-6">
+                <!-- 系统概览 -->
+                <div id="dashboard" class="page-content active">
+                    <!-- 快速统计卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <div class="card card-accent-border">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-gray-400 text-sm">车辆总数</p>
+                                    <p class="text-3xl font-bold text-white">156</p>
+                                </div>
+                                <div class="p-3 rounded-sm bg-blue-900/30 text-blue-400">
+                                    <i class="fa fa-car fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div>
+                                    <span class="text-gray-400">较上月</span>
+                                    <span class="text-green-400 ml-1">+3.2%</span>
+                                </div>
+                                <div class="h-10 w-24">
+                                    <canvas class="sparkline" data-values="32,45,38,42,45,50,48"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card card-accent-border" style="border-left-color: #10B981;">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-gray-400 text-sm">本月检测</p>
+                                    <p class="text-3xl font-bold text-white">89</p>
+                                </div>
+                                <div class="p-3 rounded-sm bg-green-900/30 text-green-400">
+                                    <i class="fa fa-check-circle fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div>
+                                    <span class="text-gray-400">较上月</span>
+                                    <span class="text-green-400 ml-1">+5.7%</span>
+                                </div>
+                                <div class="h-10 w-24">
+                                    <canvas class="sparkline" data-values="25,30,28,35,40,38,42"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card card-accent-border" style="border-left-color: #F59E0B;">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-gray-400 text-sm">电池健康率</p>
+                                    <p class="text-3xl font-bold text-white">87.3%</p>
+                                </div>
+                                <div class="p-3 rounded-sm bg-yellow-900/30 text-yellow-400">
+                                    <i class="fa fa-bolt fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div>
+                                    <span class="text-gray-400">较上月</span>
+                                    <span class="text-red-400 ml-1">-1.5%</span>
+                                </div>
+                                <div class="h-10 w-24">
+                                    <canvas class="sparkline" data-values="92,90,89,88,87,87,87"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card card-accent-border" style="border-left-color: #EF4444;">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <p class="text-gray-400 text-sm">异常车辆</p>
+                                    <p class="text-3xl font-bold text-white">7</p>
+                                </div>
+                                <div class="p-3 rounded-sm bg-red-900/30 text-red-400">
+                                    <i class="fa fa-exclamation-triangle fa-lg"></i>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <div>
+                                    <span class="text-gray-400">较上周</span>
+                                    <span class="text-green-400 ml-1">-3.2%</span>
+                                </div>
+                                <div class="h-10 w-24">
+                                    <canvas class="sparkline" data-values="12,10,9,8,8,7,7"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 图表区域 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">电池健康状态分布</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">月度</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">季度</button>
+                                    <button class="btn-secondary py-1 px-3 text-xs">年度</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="batteryHealthChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">检测趋势</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">周度</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">月度</button>
+                                    <button class="btn-secondary py-1 px-3 text-xs">季度</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="detectionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 最近检测记录 -->
+                    <div class="card mb-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-medium text-white">最近检测记录</h3>
+                            <button class="text-primary hover:text-blue-400 text-sm font-medium">查看全部</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-dark-400">
+                                    <tr>
+                                        <th scope="col" class="table-header">检测类型</th>
+                                        <th scope="col" class="table-header">车辆信息</th>
+                                        <th scope="col" class="table-header">检测人员</th>
+                                        <th scope="col" class="table-header">时间</th>
+                                        <th scope="col" class="table-header">状态</th>
+                                        <th scope="col" class="table-header">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-dark-300 divide-y divide-gray-700">
+                                    <tr>
+                                        <td class="table-cell">
+                                            <div class="flex items-center">
+                                                <div class="p-2 rounded-sm bg-blue-900/30 text-blue-400 mr-3">
+                                                    <i class="fa fa-car"></i>
+                                                </div>
+                                                <span>车辆入库</span>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell">特斯拉 Model 3 (TSL-2023-001)</td>
+                                        <td class="table-cell">张工程师</td>
+                                        <td class="table-cell">2023-06-15 09:45</td>
+                                        <td class="table-cell">
+                                            <span class="badge badge-success">已完成</span>
+                                        </td>
+                                        <td class="table-cell">
+                                            <button class="text-primary hover:text-blue-400 mr-3">查看</button>
+                                            <button class="text-gray-400 hover:text-gray-300">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell">
+                                            <div class="flex items-center">
+                                                <div class="p-2 rounded-sm bg-green-900/30 text-green-400 mr-3">
+                                                    <i class="fa fa-bolt"></i>
+                                                </div>
+                                                <span>电池检测</span>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell">比亚迪汉 (BDY-2023-042)</td>
+                                        <td class="table-cell">李工程师</td>
+                                        <td class="table-cell">2023-06-14 14:30</td>
+                                        <td class="table-cell">
+                                            <span class="badge badge-success">已完成</span>
+                                        </td>
+                                        <td class="table-cell">
+                                            <button class="text-primary hover:text-blue-400 mr-3">查看</button>
+                                            <button class="text-gray-400 hover:text-gray-300">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell">
+                                            <div class="flex items-center">
+                                                <div class="p-2 rounded-sm bg-yellow-900/30 text-yellow-400 mr-3">
+                                                    <i class="fa fa-cogs"></i>
+                                                </div>
+                                                <span>系统诊断</span>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell">蔚来 ES6 (NIO-2023-018)</td>
+                                        <td class="table-cell">王工程师</td>
+                                        <td class="table-cell">2023-06-15 12:15</td>
+                                        <td class="table-cell">
+                                            <span class="badge badge-warning">处理中</span>
+                                        </td>
+                                        <td class="table-cell">
+                                            <button class="text-primary hover:text-blue-400 mr-3">查看</button>
+                                            <button class="text-gray-400 hover:text-gray-300">编辑</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="table-cell">
+                                            <div class="flex items-center">
+                                                <div class="p-2 rounded-sm bg-red-900/30 text-red-400 mr-3">
+                                                    <i class="fa fa-exclamation-circle"></i>
+                                                </div>
+                                                <span>故障维修</span>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell">小鹏 P7 (XPG-2023-027)</td>
+                                        <td class="table-cell">赵工程师</td>
+                                        <td class="table-cell">2023-06-15 10:20</td>
+                                        <td class="table-cell">
+                                            <span class="badge badge-danger">待处理</span>
+                                        </td>
+                                        <td class="table-cell">
+                                            <button class="text-primary hover:text-blue-400 mr-3">查看</button>
+                                            <button class="text-gray-400 hover:text-gray-300">编辑</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 异常车辆和电池状态 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 异常车辆 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">异常车辆</h3>
+                                <button class="text-primary hover:text-blue-400 text-sm font-medium">处理异常</button>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center">
+                                        <div class="p-2 rounded-sm bg-red-900/30 text-red-400 mr-3">
+                                            <i class="fa fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-white">小鹏 P7 (XPG-2023-027)</p>
+                                            <p class="text-xs text-gray-400">电池温度异常</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-red-400">紧急</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center">
+                                        <div class="p-2 rounded-sm bg-yellow-900/30 text-yellow-400 mr-3">
+                                            <i class="fa fa-exclamation-circle"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-white">蔚来 ES6 (NIO-2023-018)</p>
+                                            <p class="text-xs text-gray-400">充电系统故障</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-yellow-400">中等</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center">
+                                        <div class="p-2 rounded-sm bg-yellow-900/30 text-yellow-400 mr-3">
+                                            <i class="fa fa-exclamation-circle"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-white">比亚迪汉 (BDY-2023-042)</p>
+                                            <p class="text-xs text-gray-400">电池健康度下降</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-yellow-400">中等</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 电池状态 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">电池状态监控</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">全部</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">需要维护</button>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <p class="text-white">特斯拉 Model 3 (TSL-2023-001)</p>
+                                        <span class="text-xs text-green-400">良好</span>
+                                    </div>
+                                    <div class="w-full bg-dark-300 h-2 mb-1">
+                                        <div class="bg-green-500 h-2" style="width: 92%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-400">
+                                        <span>健康度: 92%</span>
+                                        <span>循环次数: 128</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <p class="text-white">比亚迪汉 (BDY-2023-042)</p>
+                                        <span class="text-xs text-yellow-400">注意</span>
+                                    </div>
+                                    <div class="w-full bg-dark-300 h-2 mb-1">
+                                        <div class="bg-yellow-500 h-2" style="width: 78%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-400">
+                                        <span>健康度: 78%</span>
+                                        <span>循环次数: 342</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-dark-400 border border-gray-700">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <p class="text-white">蔚来 ES6 (NIO-2023-018)</p>
+                                        <span class="text-xs text-red-400">需维护</span>
+                                    </div>
+                                    <div class="w-full bg-dark-300 h-2 mb-1">
+                                        <div class="bg-red-500 h-2" style="width: 65%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-xs text-gray-400">
+                                        <span>健康度: 65%</span>
+                                        <span>循环次数: 412</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 车辆信息管理 -->
+                <div id="vehicles" class="page-content hidden">
+                    <!-- 车辆选择器 -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <h3 class="text-lg font-medium text-white mr-4">车辆状态监控</h3>
+                            <select id="vehicle-selector" class="input-field py-1 px-3 text-sm w-64">
+                                <option value="test-vehicle-001" selected="">智能网联测试试验车1</option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button class="btn-secondary flex items-center justify-center">
+                                <i class="fa fa-refresh mr-2"></i> 刷新数据
+                            </button>
+                            <button class="btn-primary flex items-center justify-center">
+                                <i class="fa fa-download mr-2"></i> 导出报告
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 整车核心状态 -->
+                    <div class="card mb-6 border-l-4 border-red-500">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-white">整车核心状态</h3>
+                            <div class="flex items-center">
+                                <span class="badge badge-danger mr-2">最高报警等级: 3级</span>
+                                <span class="text-xs text-gray-400">更新时间: <span id="vehicle-current-time"></span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <!-- 运行状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">运行状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">车辆状态:</span>
+                                        <span class="text-green-400 font-medium">启动</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">运行模式:</span>
+                                        <span class="text-blue-400 font-medium">纯电</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">挡位:</span>
+                                        <span class="text-blue-400 font-medium">D挡</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 充电状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">充电状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">充电状态:</span>
+                                        <span class="text-gray-300 font-medium">未充电</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">充电方式:</span>
+                                        <span class="text-gray-500 font-medium">无效</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">充电量:</span>
+                                        <span class="text-gray-500 font-medium">无效</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 高压系统状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">高压系统状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">DC-DC状态:</span>
+                                        <span class="text-green-400 font-medium">工作</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">高压互锁状态:</span>
+                                        <span class="text-red-400 font-medium" data-tooltip="高压互锁回路断开，可能存在安全隐患" style="color: rgb(114, 247, 140);">正常</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">高压对地绝缘电阻:</span>
+                                        <span class="text-red-400 font-medium" data-tooltip="正常值范围: 0~60000kΩ" style="color: rgb(120, 247, 114);">50MΩ</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 核心运行数据 -->
+                        <div class="bg-dark-400 p-4 border border-gray-700">
+                            <h4 class="text-sm font-medium text-gray-400 mb-3">核心运行数据</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">车速</span>
+                                    <span class="text-2xl font-bold text-white">0<span class="text-sm">km/h</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">累计里程</span>
+                                    <span class="text-2xl font-bold text-white">457.8<span class="text-sm">km</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">总电压</span>
+                                    <span class="text-2xl font-bold text-white">385.6<span class="text-sm">V</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">总电流</span>
+                                    <span class="text-2xl font-bold text-white">85.3<span class="text-sm">A</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">SOC</span>
+                                    <span class="text-2xl font-bold text-white">68<span class="text-sm">%</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分系统状态 -->
+                    <div class="space-y-6 mb-6">
+                        <!-- 动力蓄电池系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="battery">
+                                <div class="flex items-center">
+                                    <i class="fa fa-battery-full text-blue-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">动力蓄电池系统</h3>
+                                    <span class="badge badge-warning ml-3">2级报警</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4" id="battery-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <!-- 电池包基础信息 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">电池包基础信息</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">动力蓄电池包个数:</span>
+                                                <span class="text-white font-medium">2</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包1电压:</span>
+                                                <span class="text-white font-medium">385.6V</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包1电流:</span>
+                                                <span class="text-white font-medium">85.3A</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包2电压:</span>
+                                                <span class="text-white font-medium">386.2V</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包2电流:</span>
+                                                <span class="text-white font-medium">84.9A</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 温度状态 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">温度状态</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包1温度探针个数:</span>
+                                                <span class="text-white font-medium">8</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包1最高温度:</span>
+                                                <span class="text-yellow-400 font-medium">42°C</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包1最低温度:</span>
+                                                <span class="text-blue-400 font-medium">35°C</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包2最高温度:</span>
+                                                <span class="text-yellow-400 font-medium">43°C</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">包2最低温度:</span>
+                                                <span class="text-blue-400 font-medium">36°C</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 电池包故障 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">电池包故障</h4>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full">
+                                            <thead>
+                                                <tr>
+                                                    <th class="text-left text-xs font-medium text-gray-400 py-2">故障类型</th>
+                                                    <th class="text-left text-xs font-medium text-gray-400 py-2">报警等级</th>
+                                                    <th class="text-left text-xs font-medium text-gray-400 py-2">状态</th>
+                                                    <th class="text-left text-xs font-medium text-gray-400 py-2">处理建议</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="divide-y divide-gray-700">
+                                                <tr>
+                                                    <td class="py-2 text-sm">电池高温报警</td>
+                                                    <td class="py-2"><span class="badge badge-warning">2级</span></td>
+                                                    <td class="py-2 text-yellow-400">激活</td>
+                                                    <td class="py-2 text-sm text-gray-300">检查散热系统，降低充电功率</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-2 text-sm">最小并联单元过压报警</td>
+                                                    <td class="py-2"><span class="badge badge-warning">2级</span></td>
+                                                    <td class="py-2 text-yellow-400">激活</td>
+                                                    <td class="py-2 text-sm text-gray-300">检查电池管理系统，均衡电池电压</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-2 text-sm">SOC 低报警</td>
+                                                    <td class="py-2"><span class="badge badge-warning">1级</span></td>
+                                                    <td class="py-2 text-gray-300">未激活</td>
+                                                    <td class="py-2 text-sm text-gray-300">及时充电</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 驱动电机系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="motor">
+                                <div class="flex items-center">
+                                    <i class="fa fa-cogs text-green-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">驱动电机系统</h3>
+                                    <span class="badge badge-success ml-3">正常</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4 hidden" id="motor-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <!-- 运行状态 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">运行状态</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">驱动电机个数:</span>
+                                                <span class="text-white font-medium">1</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">电机序号:</span>
+                                                <span class="text-white font-medium">1</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">工作状态:</span>
+                                                <span class="text-green-400 font-medium">耗电</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 温度状态 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">温度状态</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">驱动电机温度:</span>
+                                                <span class="text-green-400 font-medium">45°C</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">电机控制器温度:</span>
+                                                <span class="text-green-400 font-medium">48°C</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 运行数据 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">运行数据</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">驱动电机转速:</span>
+                                                <span class="text-white font-medium">3,250r/min</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">驱动电机转矩:</span>
+                                                <span class="text-white font-medium">125.6N·m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">电机控制器输入电压:</span>
+                                                <span class="text-white font-medium">385.6V</span>
+                                            </div>
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">电机控制器输入电流:</span>
+                                                <span class="text-white font-medium">85.3A</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">电机效率:</span>
+                                                <span class="text-white font-medium">94.2%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 燃料电池系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="fuel-cell">
+                                <div class="flex items-center">
+                                    <i class="fa fa-flask text-purple-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">燃料电池系统</h3>
+                                    <span class="badge badge-danger ml-3">未配备</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4 hidden" id="fuel-cell-content">
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <p class="text-center text-gray-500 py-8">当前车辆未配备燃料电池系统</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 超级电容系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="super-capacitor">
+                                <div class="flex items-center">
+                                    <i class="fa fa-bolt text-yellow-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">超级电容系统</h3>
+                                    <span class="badge badge-danger ml-3">未配备</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4 hidden" id="super-capacitor-content">
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <p class="text-center text-gray-500 py-8">当前车辆未配备超级电容系统</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 故障汇总与查询 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 故障汇总 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-white">故障汇总</h3>
+                                <button class="text-primary hover:text-blue-400 text-sm font-medium">清除已处理故障</button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <!-- 故障系统分类 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700 mb-4">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">故障系统分类</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-red-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">动力蓄电池: 2</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">驱动电机: 0</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-gray-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">发动机: 0</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-gray-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">燃料电池: 0</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-gray-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">超级电容: 0</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <div class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></div>
+                                            <span class="text-gray-300 text-sm">其他: 1</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 通用报警标志位 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700 mb-4">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">通用报警标志位详情</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-300 text-sm">高压互锁状态报警</span>
+                                            <span class="badge badge-danger">激活</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-300 text-sm">DC-DC温度报警</span>
+                                            <span class="badge badge-success">未激活</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-300 text-sm">制动系统报警</span>
+                                            <span class="badge badge-success">未激活</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-300 text-sm">电池高温报警</span>
+                                            <span class="badge badge-warning">激活</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 故障码列表 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">故障码列表</h4>
+                                    <div class="space-y-3">
+
+                                        <div class="flex justify-between items-center p-2 bg-dark-300 border border-gray-700 cursor-pointer hover:border-yellow-500 transition-all" data-fault-code="P1B01">
+                                            <div class="flex items-center">
+                                                <span class="font-mono text-yellow-400 mr-3">P1B01</span>
+                                                <span class="text-gray-300">电池包1温度过高</span>
+                                            </div>
+                                            <span class="badge badge-warning">2级</span>
+                                        </div>
+                                        <div class="flex justify-between items-center p-2 bg-dark-300 border border-gray-700 cursor-pointer hover:border-yellow-500 transition-all" data-fault-code="P1B02">
+                                            <div class="flex items-center">
+                                                <span class="font-mono text-yellow-400 mr-3">P1B02</span>
+                                                <span class="text-gray-300">最小并联单元过压</span>
+                                            </div>
+                                            <span class="badge badge-warning">2级</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 故障码查询 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-white">故障码查询</h3>
+                                <button class="btn-secondary text-sm">刷新</button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="flex space-x-3">
+                                    <input type="text" placeholder="输入故障码..." class="input-field flex-1">
+                                    <button class="btn-primary">查询</button>
+                                </div>
+                                
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">故障码详情</h4>
+                                    <div id="fault-code-detail">
+                                        <p class="text-gray-500 text-center py-8">请输入故障码进行查询</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 辅助监控信息 -->
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">辅助监控信息</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">定位状态:</span>
+                                            <span class="text-green-400 font-medium">有效</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">经度:</span>
+                                            <span class="text-white font-medium">116.3974°</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">纬度:</span>
+                                            <span class="text-white font-medium">39.9093°</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">数据采集时间:</span>
+                                            <span class="text-white font-medium"><span id="iot-current-time"></span></span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">数据状态:</span>
+                                            <span class="text-green-400 font-medium">实时上报</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 检测记录管理 -->
+                <div id="detection" class="page-content hidden">
+                    <div class="card mb-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                            <h3 class="text-lg font-medium text-white mb-4 md:mb-0">检测记录管理</h3>
+                            <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索车辆或检测类型..." class="input-field pl-10">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fa fa-search text-gray-500"></i>
+                                    </div>
+                                </div>
+                                <button id="add-detection-btn" class="btn-primary flex items-center justify-center">
+                                    <i class="fa fa-plus mr-2"></i> 添加检测记录
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-dark-400">
+                                    <tr>
+                                        <th scope="col" class="table-header">车辆ID</th>
+                                        <th scope="col" class="table-header">品牌型号</th>
+                                        <th scope="col" class="table-header">车牌号</th>
+                                        <th scope="col" class="table-header">检测类型</th>
+                                        <th scope="col" class="table-header">检测结果</th>
+                                        <th scope="col" class="table-header">检测人员</th>
+                                        <th scope="col" class="table-header">检测日期</th>
+                                        <th scope="col" class="table-header">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-dark-300 divide-y divide-gray-700" id="detection-table-body">
+                                    <!-- 检测记录数据将通过JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex items-center justify-between mt-6">
+                            <div class="text-sm text-gray-400">
+                                显示 <span class="font-medium text-gray-300">1</span> 到 <span class="font-medium text-gray-300">10</span> 条，共 <span class="font-medium text-gray-300">1240</span> 条
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-400 rounded disabled:opacity-50" disabled="">上一页</button>
+                                <button class="px-3 py-1 bg-primary text-white border border-primary rounded">1</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">2</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">3</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">...</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">124</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 电池管理 -->
+                <div id="battery" class="page-content hidden">
+                    <div class="card mb-6">
+                        <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                            <h3 class="text-lg font-medium text-white mb-4 md:mb-0">电池管理</h3>
+                            <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-3">
+                                <div class="relative">
+                                    <input type="text" placeholder="搜索车辆..." class="input-field pl-10">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <i class="fa fa-search text-gray-500"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <select class="input-field">
+                                        <option value="">所有电池类型</option>
+                                        <option value="lithium">锂电池</option>
+                                        <option value="lead-acid">铅酸电池</option>
+                                        <option value="nickel">镍氢电池</option>
+                                    </select>
+                                </div>
+                                <button id="add-battery-btn" class="btn-primary flex items-center justify-center">
+                                    <i class="fa fa-plus mr-2"></i> 添加电池记录
+                                </button>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-dark-400">
+                                    <tr>
+                                        <th scope="col" class="table-header">车辆ID</th>
+                                        <th scope="col" class="table-header">品牌型号</th>
+                                        <th scope="col" class="table-header">车牌号</th>
+                                        <th scope="col" class="table-header">电池类型</th>
+                                        <th scope="col" class="table-header">健康状态</th>
+                                        <th scope="col" class="table-header">剩余容量</th>
+                                        <th scope="col" class="table-header">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-dark-300 divide-y divide-gray-700" id="battery-table-body">
+                                    <!-- 电池数据将通过JavaScript动态生成 -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="flex items-center justify-between mt-6">
+                            <div class="text-sm text-gray-400">
+                                显示 <span class="font-medium text-gray-300">1</span> 到 <span class="font-medium text-gray-300">10</span> 条，共 <span class="font-medium text-gray-300">156</span> 条
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-400 rounded disabled:opacity-50" disabled="">上一页</button>
+                                <button class="px-3 py-1 bg-primary text-white border border-primary rounded">1</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">2</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">3</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">...</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">16</button>
+                                <button class="px-3 py-1 border border-gray-700 bg-dark-400 text-gray-300 hover:bg-dark-200 rounded">下一页</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据分析 -->
+                <div id="statistics" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">电池健康状态分布</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">月度</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">季度</button>
+                                    <button class="btn-secondary py-1 px-3 text-xs">年度</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="batteryHealthDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">检测类型分布</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">本月</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">上月</button>
+                                    <button class="btn-secondary py-1 px-3 text-xs">本季度</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="detectionTypeChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">月度检测趋势</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">电池检测</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">系统诊断</button>
+                                    <button class="btn-secondary py-1 px-3 text-xs">全部类型</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="monthlyDetectionChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-medium text-white">车辆品牌分布</h3>
+                                <div class="flex space-x-2">
+                                    <button class="btn-secondary py-1 px-3 text-xs">数量</button>
+                                    <button class="btn-primary py-1 px-3 text-xs">百分比</button>
+                                </div>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="vehicleBrandChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-medium text-white">电池健康度趋势分析</h3>
+                            <div class="flex space-x-2">
+                                <select class="input-field py-1 px-2 text-xs">
+                                    <option value="all">所有车辆</option>
+                                    <option value="tesla">特斯拉</option>
+                                    <option value="byd">比亚迪</option>
+                                    <option value="nio">蔚来</option>
+                                </select>
+                                <button class="btn-secondary py-1 px-3 text-xs">月度</button>
+                                <button class="btn-primary py-1 px-3 text-xs">季度</button>
+                                <button class="btn-secondary py-1 px-3 text-xs">年度</button>
+                            </div>
+                        </div>
+                        <div class="h-80">
+                            <canvas id="batteryHealthTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能网联管理 -->
+                <div id="iot" class="page-content hidden">
+                    <!-- 车辆选择器 -->
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <h3 class="text-lg font-medium text-white mr-4">智能驾驶系统监控</h3>
+                            <select id="iot-vehicle-selector" class="input-field py-1 px-3 text-sm w-64">
+                                <option value="test-vehicle-001">智能网联测试试验车1</option>
+                            </select>
+                        </div>
+                        <div class="flex space-x-3">
+                            <button class="btn-secondary flex items-center justify-center">
+                                <i class="fa fa-refresh mr-2"></i> 刷新数据
+                            </button>
+                            <button class="btn-primary flex items-center justify-center">
+                                <i class="fa fa-download mr-2"></i> 导出报告
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 智能驾驶核心状态 -->
+                    <div class="card mb-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-white">智能驾驶系统状态</h3>
+                            <div class="flex items-center">
+                                <span class="badge badge-success mr-2">系统状态: 正常</span>
+                                <span class="text-xs text-gray-400">更新时间: <span id="current-time"></span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <!-- 自动驾驶状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">自动驾驶状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">自动驾驶模式:</span>
+                                        <span class="text-green-400 font-medium">L2级辅助驾驶</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">车道保持状态:</span>
+                                        <span class="text-green-400 font-medium">激活</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">自适应巡航状态:</span>
+                                        <span class="text-green-400 font-medium">激活</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 传感器状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">传感器状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">激光雷达:</span>
+                                        <span class="text-green-400 font-medium">正常</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">毫米波雷达:</span>
+                                        <span class="text-green-400 font-medium">正常</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">摄像头系统:</span>
+                                        <span class="text-green-400 font-medium">正常</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 网络连接状态 -->
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <h4 class="text-sm font-medium text-gray-400 mb-3">网络连接状态</h4>
+                                <div class="space-y-2">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">网络连接:</span>
+                                        <span class="text-green-400 font-medium">5G已连接</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">V2X通信:</span>
+                                        <span class="text-yellow-400 font-medium">有限可用</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-400 text-sm">高精地图:</span>
+                                        <span class="text-green-400 font-medium">已加载</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 核心运行数据 -->
+                        <div class="bg-dark-400 p-4 border border-gray-700">
+                            <h4 class="text-sm font-medium text-gray-400 mb-3">核心运行数据</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">识别车辆数</span>
+                                    <span class="text-2xl font-bold text-white">8<span class="text-sm">辆</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">识别行人</span>
+                                    <span class="text-2xl font-bold text-white">3<span class="text-sm">人</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">障碍物距离</span>
+                                    <span class="text-2xl font-bold text-white">35.6<span class="text-sm">m</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">决策延迟</span>
+                                    <span class="text-2xl font-bold text-white">45<span class="text-sm">ms</span></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-gray-400 text-sm">算力使用率</span>
+                                    <span class="text-2xl font-bold text-white">68<span class="text-sm">%</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分系统状态 -->
+                    <div class="space-y-6 mb-6">
+                        <!-- 线控系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="drive-by-wire">
+                                <div class="flex items-center">
+                                    <i class="fa fa-cogs text-blue-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">线控系统</h3>
+                                    <span class="badge badge-success ml-3">正常</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4" id="drive-by-wire-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <!-- 线控底盘 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">线控底盘</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">响应时间:</span>
+                                                <span class="text-white font-medium">15ms</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">故障码:</span>
+                                                <span class="text-gray-500 font-medium">无</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 线控转向 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">线控转向</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">转向力矩:</span>
+                                                <span class="text-white font-medium">2.5N·m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">转向角度:</span>
+                                                <span class="text-white font-medium">15°</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 线控驱动 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">线控驱动</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">请求扭矩:</span>
+                                                <span class="text-white font-medium">85N·m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">实际扭矩:</span>
+                                                <span class="text-white font-medium">83.5N·m</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 线控制动 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">线控制动</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">制动压力:</span>
+                                                <span class="text-white font-medium">4.2MPa</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">ABS状态:</span>
+                                                <span class="text-gray-300 font-medium">未激活</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 传感器系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="sensors">
+                                <div class="flex items-center">
+                                    <i class="fa fa-radar text-purple-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">传感器系统</h3>
+                                    <span class="badge badge-success ml-3">正常</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4 hidden" id="sensors-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                    <!-- 激光雷达 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">激光雷达</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">点云数量:</span>
+                                                <span class="text-white font-medium">120000点/秒</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">最大探测距离:</span>
+                                                <span class="text-white font-medium">200m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">水平视场角:</span>
+                                                <span class="text-white font-medium">360°</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 毫米波雷达 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">毫米波雷达</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">数量:</span>
+                                                <span class="text-white font-medium">5个</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">最大探测距离:</span>
+                                                <span class="text-white font-medium">160m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">角度分辨率:</span>
+                                                <span class="text-white font-medium">1.5°</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 摄像头 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">摄像头</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">数量:</span>
+                                                <span class="text-white font-medium">8个</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">分辨率:</span>
+                                                <span class="text-white font-medium">800万像素</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">帧率:</span>
+                                                <span class="text-white font-medium">30fps</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 超声波雷达 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">超声波雷达</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">数量:</span>
+                                                <span class="text-white font-medium">12个</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">探测范围:</span>
+                                                <span class="text-white font-medium">0.1-5m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">精度:</span>
+                                                <span class="text-white font-medium">±2cm</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 组合导航 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">组合导航</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">状态:</span>
+                                                <span class="text-green-400 font-medium">正常</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">定位精度:</span>
+                                                <span class="text-white font-medium">±3cm</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">卫星数量:</span>
+                                                <span class="text-white font-medium">18颗</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">航向精度:</span>
+                                                <span class="text-white font-medium">±0.1°</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 智能决策系统 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between cursor-pointer system-header" data-system="decision">
+                                <div class="flex items-center">
+                                    <i class="fa fa-brain text-yellow-400 mr-3"></i>
+                                    <h3 class="text-lg font-medium text-white">智能决策系统</h3>
+                                    <span class="badge badge-success ml-3">正常</span>
+                                </div>
+                                <i class="fa fa-chevron-down text-gray-400 transition-transform system-icon"></i>
+                            </div>
+                            
+                            <div class="system-content mt-4 hidden" id="decision-content">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- 感知结果 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">感知结果</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">检测车辆数:</span>
+                                                <span class="text-white font-medium">8辆</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">检测行人:</span>
+                                                <span class="text-white font-medium">3人</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">检测障碍物:</span>
+                                                <span class="text-white font-medium">2个</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">车道线识别:</span>
+                                                <span class="text-green-400 font-medium">已识别</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 决策规划 -->
+                                    <div class="bg-dark-400 p-4 border border-gray-700">
+                                        <h4 class="text-sm font-medium text-gray-400 mb-3">决策规划</h4>
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">当前决策:</span>
+                                                <span class="text-white font-medium">保持车道</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">目标车速:</span>
+                                                <span class="text-white font-medium">60km/h</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">跟车距离:</span>
+                                                <span class="text-white font-medium">35m</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400 text-sm">路径规划:</span>
+                                                <span class="text-green-400 font-medium">已规划</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系统状态与故障 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- 系统状态 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-white">系统状态监控</h3>
+                                <button class="text-primary hover:text-blue-400 text-sm font-medium">查看详情</button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">计算平台状态</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-400">CPU使用率</span>
+                                                <span class="text-white">45%</span>
+                                            </div>
+                                            <div class="w-full bg-dark-300 h-2">
+                                                <div class="bg-blue-500 h-2" style="width: 45%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-400">GPU使用率</span>
+                                                <span class="text-white">68%</span>
+                                            </div>
+                                            <div class="w-full bg-dark-300 h-2">
+                                                <div class="bg-green-500 h-2" style="width: 68%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-400">内存使用率</span>
+                                                <span class="text-white">52%</span>
+                                            </div>
+                                            <div class="w-full bg-dark-300 h-2">
+                                                <div class="bg-yellow-500 h-2" style="width: 52%"></div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="flex justify-between text-sm mb-1">
+                                                <span class="text-gray-400">温度</span>
+                                                <span class="text-white">62°C</span>
+                                            </div>
+                                            <div class="w-full bg-dark-300 h-2">
+                                                <div class="bg-yellow-500 h-2" style="width: 62%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-dark-400 p-4 border border-gray-700">
+                                    <h4 class="text-sm font-medium text-gray-400 mb-3">通信状态</h4>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">CAN总线状态:</span>
+                                            <span class="text-green-400 font-medium">正常</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">以太网状态:</span>
+                                            <span class="text-green-400 font-medium">正常</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">无线通信状态:</span>
+                                            <span class="text-green-400 font-medium">正常</span>
+                                        </div>
+                                        <div class="flex justify-between">
+                                            <span class="text-gray-400 text-sm">V2X通信状态:</span>
+                                            <span class="text-yellow-400 font-medium">有限可用</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 故障记录 -->
+                        <div class="card">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-lg font-medium text-white">故障记录</h3>
+                                <button class="text-primary hover:text-blue-400 text-sm font-medium">清除记录</button>
+                            </div>
+                            
+                            <div class="bg-dark-400 p-4 border border-gray-700">
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-2 bg-dark-300 border border-gray-700">
+                                        <div class="flex items-center">
+                                            <span class="text-green-400 mr-3"><i class="fa fa-check-circle"></i></span>
+                                            <div>
+                                                <p class="text-white">系统自检完成</p>
+                                                <p class="text-xs text-gray-400">所有系统正常运行</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-500">15:30:45</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-2 bg-dark-300 border border-gray-700">
+                                        <div class="flex items-center">
+                                            <span class="text-green-400 mr-3"><i class="fa fa-check-circle"></i></span>
+                                            <div>
+                                                <p class="text-white">高精地图更新完成</p>
+                                                <p class="text-xs text-gray-400">版本: v2.5.3</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-500">15:15:22</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-2 bg-dark-300 border border-gray-700">
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400 mr-3"><i class="fa fa-exclamation-circle"></i></span>
+                                            <div>
+                                                <p class="text-white">右后侧摄像头短暂遮挡</p>
+                                                <p class="text-xs text-gray-400">已恢复正常</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-500">14:45:10</span>
+                                    </div>
+                                    <div class="flex items-center justify-between p-2 bg-dark-300 border border-gray-700">
+                                        <div class="flex items-center">
+                                            <span class="text-green-400 mr-3"><i class="fa fa-check-circle"></i></span>
+                                            <div>
+                                                <p class="text-white">系统启动完成</p>
+                                                <p class="text-xs text-gray-400">所有模块初始化成功</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-xs text-gray-500">14:30:05</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 通信协议及数据导入 -->
+                <div id="protocol" class="page-content hidden">
+                    <div class="page-header mb-6">
+                        <h1 class="text-2xl font-bold text-white">通信协议及数据导入</h1>
+                        <p class="text-gray-400 mt-1">管理系统通信协议配置和数据导入功能</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- 协议信息卡片 -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-dark-200 rounded-lg p-6 shadow-lg">
+                                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                                    <i class="fa fa-info-circle text-blue-400 mr-2"></i>
+                                    协议信息
+                                </h2>
+                                
+                                <div class="space-y-6">
+                                    <!-- 协议基本信息 -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="form-group">
+                                            <label class="block text-gray-400 text-sm mb-2">厂家名称</label>
+                                            <input type="text" class="w-full bg-dark-300 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value="旅行车有限公司" readonly="" onfocus="this.blur()">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="block text-gray-400 text-sm mb-2">版本号</label>
+                                            <input type="text" class="w-full bg-dark-300 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" value="v2.1.0" readonly="">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 基于的国标 -->
+                                    <div class="form-group">
+                                        <label class="block text-gray-400 text-sm mb-2">基于的国标GB</label>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="gb1" class="mr-2 accent-blue-500" checked="" disabled="">
+                                                <label for="gb1" class="text-white">GB/T 45312 - 2025《智能网联汽车 自动驾驶系统设计运行条件》
+</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="gb2" class="mr-2 accent-blue-500" checked="" disabled="">
+                                                <label for="gb2" class="text-white">GB/T 45315 - 2025《基于 LTE - V2X 直连通信的车载信息交互系统技术要求及试验方法》
+</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="gb3" class="mr-2 accent-blue-500" checked="" disabled="">
+                                                <label for="gb3" class="text-white">GB/T 45688 - 2025《新能源汽车安全监测技术规范》
+</label>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <input type="checkbox" id="gb4" class="mr-2 accent-blue-500" disabled="">
+                                                <label for="gb4" class="text-white">GB/T 32960.3 - 2025《电动汽车远程服务与管理系统技术规范 第 3 部分：通信协议及数据格式》
+</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 协议描述 -->
+                                    <div class="form-group">
+                                        <label class="block text-gray-400 text-sm mb-2">协议描述</label>
+                                        <textarea class="w-full bg-dark-300 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 h-24" readonly="">本协议基于国家标准GB/T 34590-2017、GB/T 24347-2017和GB/T 18487.1-2015开发，用于新能源汽车智能检测系统与车辆各子系统之间的通信。协议支持CAN总线通信，包含动力蓄电池、驱动电机、充电系统等关键数据的采集与传输。
+                                        </textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 数据导入卡片 -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-dark-200 rounded-lg p-6 shadow-lg">
+                                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                                    <i class="fa fa-upload text-green-400 mr-2"></i>
+                                    数据导入
+                                </h2>
+                                
+                                <div class="space-y-4">
+                                    <div class="form-group">
+                                        <label class="block text-gray-400 text-sm mb-2">导入类型</label>
+                                        <select class="w-full bg-dark-300 border border-gray-700 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                            <option>车辆配置数据</option>
+                                            <option>历史运行数据</option>
+                                            <option>故障记录数据</option>
+                                            <option>协议配置数据</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <!-- 文件上传区域 -->
+                                    <div class="form-group">
+                                        <label class="block text-gray-400 text-sm mb-2">选择文件</label>
+                                        <div class="border-2 border-dashed border-gray-600 rounded-lg p-4 text-center hover:border-blue-500 transition-colors cursor-pointer" id="file-drop-area">
+                                            <i class="fa fa-file-text-o text-gray-400 text-3xl mb-2"></i>
+                                            <p class="text-gray-300 text-sm">拖拽文件到此处或点击上传</p>
+                                            <p class="text-gray-500 text-xs mt-1">支持 Markdown 格式文件</p>
+                                            <input type="file" id="file-input" class="hidden" accept=".md,.markdown,text/markdown">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- 导入说明 -->
+                                    <div class="bg-blue-900 bg-opacity-30 border border-blue-700 rounded-md p-3">
+                                        <h3 class="text-blue-400 font-medium text-sm flex items-center">
+                                            <i class="fa fa-info-circle mr-1"></i>
+                                            导入说明
+                                        </h3>
+                                        <ul class="text-gray-300 text-xs mt-2 space-y-1 list-disc list-inside">
+                                            <li>文件必须为 Markdown 格式 (.md)</li>
+                                            <li>文件大小不超过 10MB</li>
+                                            <li>导入前请确保数据格式符合系统要求</li>
+                                            <li>导入将覆盖现有相同类型数据</li>
+                                        </ul>
+                                    </div>
+                                    
+                                    <!-- 操作按钮 -->
+                                    <div class="flex space-x-2 pt-2">
+                                        <button id="import-btn" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+                                            <i class="fa fa-check mr-1"></i>
+                                            导入
+                                        </button>
+                                        <button id="cancel-import-btn" class="bg-dark-300 hover:bg-dark-400 text-gray-300 py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+                                            <i class="fa fa-times mr-1"></i>
+                                            取消
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 最近导入记录 -->
+                            <div class="bg-dark-200 rounded-lg p-6 shadow-lg mt-6">
+                                <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
+                                    <i class="fa fa-history text-purple-400 mr-2"></i>
+                                    最近导入记录
+                                </h2>
+                                
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center">
+                                            <i class="fa fa-file-text-o text-green-500 mr-2"></i>
+                                            <span class="text-gray-300">车辆配置_v2.0.md</span>
+                                        </div>
+                                        <span class="text-gray-500 text-xs">2023-07-15 14:30</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center">
+                                            <i class="fa fa-file-text-o text-green-500 mr-2"></i>
+                                            <span class="text-gray-300">故障记录_Q2.md</span>
+                                        </div>
+                                        <span class="text-gray-500 text-xs">2023-07-10 09:15</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-sm">
+                                        <div class="flex items-center">
+                                            <i class="fa fa-file-text-o text-yellow-500 mr-2"></i>
+                                            <span class="text-gray-300">历史运行数据_June.md</span>
+                                        </div>
+                                        <span class="text-gray-500 text-xs">2023-07-05 16:45</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+                <div id="settings" class="page-content hidden">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2">
+                            <div class="card mb-6">
+                                <h3 class="text-lg font-medium text-white mb-6">系统配置</h3>
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">系统名称</label>
+                                        <input type="text" value="新能源汽车智能检测系统" class="input-field">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">系统描述</label>
+                                        <textarea class="input-field h-24" rows="4">新能源汽车智能检测系统是一款专为新能源汽车检测和维护设计的综合管理平台，提供车辆信息管理、检测记录管理、电池管理等功能。</textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">数据备份频率</label>
+                                        <select class="input-field">
+                                            <option value="daily">每天</option>
+                                            <option value="weekly" selected="">每周</option>
+                                            <option value="monthly">每月</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-400 mb-2">检测报告保留时间</label>
+                                        <select class="input-field">
+                                            <option value="3">3个月</option>
+                                            <option value="6">6个月</option>
+                                            <option value="12" selected="">12个月</option>
+                                            <option value="24">24个月</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="enable-notifications" class="h-4 w-4 text-primary rounded border-gray-600 focus:ring-primary" checked="">
+                                        <label for="enable-notifications" class="ml-2 text-sm text-gray-300">启用系统通知</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="enable-auto-update" class="h-4 w-4 text-primary rounded border-gray-600 focus:ring-primary" checked="">
+                                        <label for="enable-auto-update" class="ml-2 text-sm text-gray-300">启用自动更新</label>
+                                    </div>
+                                    <div class="pt-4">
+                                        <button class="btn-primary">保存设置</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="card mb-6">
+                                <h3 class="text-lg font-medium text-white mb-6">系统状态</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="text-gray-400">CPU使用率</span>
+                                            <span class="text-white">24%</span>
+                                        </div>
+                                        <div class="w-full bg-dark-400 h-2">
+                                            <div class="bg-green-500 h-2" style="width: 24%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="text-gray-400">内存使用率</span>
+                                            <span class="text-white">45%</span>
+                                        </div>
+                                        <div class="w-full bg-dark-400 h-2">
+                                            <div class="bg-blue-500 h-2" style="width: 45%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="text-gray-400">存储空间</span>
+                                            <span class="text-white">68%</span>
+                                        </div>
+                                        <div class="w-full bg-dark-400 h-2">
+                                            <div class="bg-yellow-500 h-2" style="width: 68%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="pt-4">
+                                        <button class="btn-secondary w-full mb-3">
+                                            <i class="fa fa-refresh mr-2"></i> 重启系统
+                                        </button>
+                                        <button class="btn-secondary w-full">
+                                            <i class="fa fa-download mr-2"></i> 备份数据
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <h3 class="text-lg font-medium text-white mb-6">系统更新</h3>
+                                <div class="space-y-4">
+                                    <div class="text-center py-4">
+                                        <i class="fa fa-check-circle text-green-500 text-4xl mb-2"></i>
+                                        <p class="text-white">系统已是最新版本</p>
+                                        <p class="text-sm text-gray-400">v2.5.3</p>
+                                    </div>
+                                    <div class="pt-4">
+                                        <button class="btn-secondary w-full">
+                                            <i class="fa fa-search mr-2"></i> 检查更新
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div id="modal" class="fixed inset-0 bg-dark-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-dark-300 border border-gray-700 p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-medium text-white" id="modal-title">添加车辆</h3>
+                <button id="modal-close" class="text-gray-400 hover:text-white">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div id="modal-content">
+                <!-- 模态框内容将通过JavaScript动态生成 -->
+            </div>
+            <div class="flex justify-end space-x-3 mt-6">
+                <button id="modal-cancel" class="btn-secondary">取消</button>
+                <button id="modal-save" class="btn-primary">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 侧边栏导航
+            const navLinks = document.querySelectorAll('a[data-target]');
+            const pageContents = document.querySelectorAll('.page-content');
+            const pageTitle = document.getElementById('page-title');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = this.getAttribute('data-target');
+                    
+                    // 更新导航栏活动状态
+                    navLinks.forEach(navLink => {
+                        navLink.classList.remove('sidebar-active');
+                    });
+                    this.classList.add('sidebar-active');
+                    
+                    // 更新页面内容显示
+                    pageContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById(target).classList.remove('hidden');
+                    
+                    // 更新页面标题
+                    pageTitle.textContent = this.querySelector('span').textContent;
+                    
+                    // 关闭移动端菜单
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                    document.getElementById('mobile-menu-content').classList.add('-translate-x-full');
+                });
+            });
+
+            // 移动端菜单
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileMenuContent = document.getElementById('mobile-menu-content');
+            const mobileMenuClose = document.getElementById('mobile-menu-close');
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.remove('hidden');
+                setTimeout(() => {
+                    mobileMenuContent.classList.remove('-translate-x-full');
+                }, 10);
+            });
+
+            function closeMobileMenu() {
+                mobileMenuContent.classList.add('-translate-x-full');
+                setTimeout(() => {
+                    mobileMenu.classList.add('hidden');
+                }, 300);
+            }
+
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+
+            mobileNavItems.forEach(item => {
+                item.addEventListener('click', closeMobileMenu);
+            });
+
+            // 文件上传区域交互
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            
+            if (fileDropArea && fileInput) {
+                fileDropArea.addEventListener('click', () => {
+                    fileInput.click();
+                });
+                
+                fileDropArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileDropArea.classList.add('border-blue-500');
+                });
+                
+                fileDropArea.addEventListener('dragleave', () => {
+                    fileDropArea.classList.remove('border-blue-500');
+                });
+                
+                fileDropArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileDropArea.classList.remove('border-blue-500');
+                    
+                    if (e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        updateFileDisplay(e.dataTransfer.files[0]);
+                    }
+                });
+                
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files.length) {
+                        updateFileDisplay(fileInput.files[0]);
+                    }
+                });
+                
+                function updateFileDisplay(file) {
+                    // 检查文件类型
+                    if (file.type === 'text/markdown' || file.name.endsWith('.md')) {
+                        fileDropArea.innerHTML = `
+                            <i class="fa fa-file-text-o text-green-400 text-3xl mb-2"></i>
+                            <p class="text-white text-sm">${file.name}</p>
+                            <p class="text-gray-400 text-xs mt-1">${formatFileSize(file.size)}</p>
+                            <input type="file" id="file-input" class="hidden" accept=".md,.markdown,text/markdown">
+                        `;
+                        
+                        // 重新绑定点击事件
+                        fileDropArea.addEventListener('click', () => {
+                            fileInput.click();
+                        });
+                    } else {
+                        alert('请上传 Markdown 格式的文件 (.md)');
+                        fileInput.value = '';
+                    }
+                }
+                
+                function formatFileSize(bytes) {
+                    if (bytes < 1024) return bytes + ' B';
+                    else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+                    else return (bytes / 1048576).toFixed(2) + ' MB';
+                }
+            }
+            
+            // 导入按钮交互
+            const importBtn = document.getElementById('import-btn');
+            const cancelImportBtn = document.getElementById('cancel-import-btn');
+            
+            if (importBtn) {
+                importBtn.addEventListener('click', () => {
+                    if (fileInput && fileInput.files.length) {
+                        // 模拟导入过程
+                        importBtn.disabled = true;
+                        importBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 导入中...';
+                        
+                        setTimeout(() => {
+                            importBtn.disabled = false;
+                            importBtn.innerHTML = '<i class="fa fa-check mr-1"></i> 导入';
+                            
+                            // 显示成功消息
+                            showNotification('数据导入成功', 'success');
+                            
+                            // 重置文件上传区域
+                            if (fileDropArea) {
+                                fileDropArea.innerHTML = `
+                                    <i class="fa fa-file-text-o text-gray-400 text-3xl mb-2"></i>
+                                    <p class="text-gray-300 text-sm">拖拽文件到此处或点击上传</p>
+                                    <p class="text-gray-500 text-xs mt-1">支持 Markdown 格式文件</p>
+                                    <input type="file" id="file-input" class="hidden" accept=".md,.markdown,text/markdown">
+                                `;
+                                
+                                // 重新绑定点击事件
+                                fileDropArea.addEventListener('click', () => {
+                                    fileInput.click();
+                                });
+                            }
+                            
+                            fileInput.value = '';
+                        }, 2000);
+                    } else {
+                        showNotification('请先选择要导入的文件', 'error');
+                    }
+                });
+            }
+            
+            if (cancelImportBtn) {
+                cancelImportBtn.addEventListener('click', () => {
+                    if (fileInput) {
+                        fileInput.value = '';
+                    }
+                    
+                    if (fileDropArea) {
+                        fileDropArea.innerHTML = `
+                            <i class="fa fa-file-text-o text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-gray-300 text-sm">拖拽文件到此处或点击上传</p>
+                            <p class="text-gray-500 text-xs mt-1">支持 Markdown 格式文件</p>
+                            <input type="file" id="file-input" class="hidden" accept=".md,.markdown,text/markdown">
+                        `;
+                        
+                        // 重新绑定点击事件
+                        fileDropArea.addEventListener('click', () => {
+                            fileInput.click();
+                        });
+                    }
+                });
+            }
+            
+            // 通知提示函数
+            function showNotification(message, type = 'info') {
+                // 创建通知元素
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 p-4 rounded-md shadow-lg z-50 transition-all transform translate-y-0 opacity-100 flex items-center`;
+                
+                // 设置通知样式
+                if (type === 'success') {
+                    notification.classList.add('bg-green-900', 'text-green-200', 'border', 'border-green-800');
+                    notification.innerHTML = `<i class="fa fa-check-circle mr-2"></i> ${message}`;
+                } else if (type === 'error') {
+                    notification.classList.add('bg-red-900', 'text-red-200', 'border', 'border-red-800');
+                    notification.innerHTML = `<i class="fa fa-exclamation-circle mr-2"></i> ${message}`;
+                } else {
+                    notification.classList.add('bg-blue-900', 'text-blue-200', 'border', 'border-blue-800');
+                    notification.innerHTML = `<i class="fa fa-info-circle mr-2"></i> ${message}`;
+                }
+                
+                // 添加到页面
+                document.body.appendChild(notification);
+                
+                // 3秒后自动消失
+                setTimeout(() => {
+                    notification.classList.add('opacity-0', 'translate-y-[-10px]');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+            
+            // 模态框
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalClose = document.getElementById('modal-close');
+            const modalCancel = document.getElementById('modal-cancel');
+            const modalSave = document.getElementById('modal-save');
+
+            function openModal(title, content) {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            modalClose.addEventListener('click', closeModal);
+            modalCancel.addEventListener('click', closeModal);
+
+            // 添加车辆按钮
+            const addVehicleBtn = document.getElementById('add-vehicle-btn');
+            if (addVehicleBtn) {
+                addVehicleBtn.addEventListener('click', function() {
+                    const content = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">车辆ID</label>
+                                <input type="text" class="input-field" placeholder="请输入车辆ID">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">品牌型号</label>
+                                <input type="text" class="input-field" placeholder="请输入品牌型号">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">车牌号</label>
+                                <input type="text" class="input-field" placeholder="请输入车牌号">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">车辆类型</label>
+                                <select class="input-field">
+                                    <option value="">请选择车辆类型</option>
+                                    <option value="sedan">轿车</option>
+                                    <option value="suv">SUV</option>
+                                    <option value="mpv">MPV</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">购买日期</label>
+                                <input type="date" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">电池类型</label>
+                                <select class="input-field">
+                                    <option value="">请选择电池类型</option>
+                                    <option value="lithium">锂电池</option>
+                                    <option value="lead-acid">铅酸电池</option>
+                                    <option value="nickel">镍氢电池</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    openModal('添加车辆', content);
+                });
+            }
+
+            // 添加检测记录按钮
+            const addDetectionBtn = document.getElementById('add-detection-btn');
+            if (addDetectionBtn) {
+                addDetectionBtn.addEventListener('click', function() {
+                    const content = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">选择车辆</label>
+                                <select class="input-field">
+                                    <option value="">请选择车辆</option>
+                                    <option value="tsl-2023-001">特斯拉 Model 3 (TSL-2023-001)</option>
+                                    <option value="bdy-2023-042">比亚迪汉 (BDY-2023-042)</option>
+                                    <option value="nio-2023-018">蔚来 ES6 (NIO-2023-018)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">检测类型</label>
+                                <select class="input-field">
+                                    <option value="">请选择检测类型</option>
+                                    <option value="battery">电池检测</option>
+                                    <option value="system">系统诊断</option>
+                                    <option value="motor">电机检测</option>
+                                    <option value="charging">充电系统检测</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">检测日期</label>
+                                <input type="date" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">检测结果</label>
+                                <select class="input-field">
+                                    <option value="">请选择检测结果</option>
+                                    <option value="normal">正常</option>
+                                    <option value="warning">警告</option>
+                                    <option value="error">异常</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">检测人员</label>
+                                <input type="text" class="input-field" placeholder="请输入检测人员">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">备注</label>
+                                <textarea class="input-field h-24" rows="4" placeholder="请输入备注信息"></textarea>
+                            </div>
+                        </div>
+                    `;
+                    openModal('添加检测记录', content);
+                });
+            }
+
+            // 添加电池记录按钮
+            const addBatteryBtn = document.getElementById('add-battery-btn');
+            if (addBatteryBtn) {
+                addBatteryBtn.addEventListener('click', function() {
+                    const content = `
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">选择车辆</label>
+                                <select class="input-field">
+                                    <option value="">请选择车辆</option>
+                                    <option value="tsl-2023-001">特斯拉 Model 3 (TSL-2023-001)</option>
+                                    <option value="bdy-2023-042">比亚迪汉 (BDY-2023-042)</option>
+                                    <option value="nio-2023-018">蔚来 ES6 (NIO-2023-018)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">电池类型</label>
+                                <select class="input-field">
+                                    <option value="">请选择电池类型</option>
+                                    <option value="lithium">锂电池</option>
+                                    <option value="lead-acid">铅酸电池</option>
+                                    <option value="nickel">镍氢电池</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">电池容量 (kWh)</label>
+                                <input type="number" class="input-field" placeholder="请输入电池容量">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">健康状态 (%)</label>
+                                <input type="number" class="input-field" placeholder="请输入健康状态">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">循环次数</label>
+                                <input type="number" class="input-field" placeholder="请输入循环次数">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">生产日期</label>
+                                <input type="date" class="input-field">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-400 mb-2">备注</label>
+                                <textarea class="input-field h-24" rows="4" placeholder="请输入备注信息"></textarea>
+                            </div>
+                        </div>
+                    `;
+                    openModal('添加电池记录', content);
+                });
+            }
+
+            // 模态框保存按钮
+            modalSave.addEventListener('click', function() {
+                // 这里可以添加保存逻辑
+                closeModal();
+                // 显示成功提示
+                alert('保存成功！');
+            });
+
+            // 初始化图表
+            initCharts();
+
+            // 初始化粒子背景
+            initParticleBackground();
+            
+            // 更新当前时间
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            // 初始化迷你图表
+            initSparklines();
+        });
+
+        // 初始化图表
+        function initCharts() {
+            // 电池健康状态分布图表
+            const batteryHealthCtx = document.getElementById('batteryHealthChart');
+            if (batteryHealthCtx) {
+                new Chart(batteryHealthCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['良好 (>90%)', '正常 (80-90%)', '注意 (70-80%)', '需维护 (<70%)'],
+                        datasets: [{
+                            data: [45, 35, 15, 5],
+                            backgroundColor: [
+                                '#10B981', // 绿色
+                                '#3B82F6', // 蓝色
+                                '#F59E0B', // 黄色
+                                '#EF4444'  // 红色
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${percentage}% (${value}辆)`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            // 检测趋势图表
+            const detectionCtx = document.getElementById('detectionChart');
+            if (detectionCtx) {
+                new Chart(detectionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                        datasets: [{
+                            label: '电池检测',
+                            data: [42, 49, 35, 55, 65, 70],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: '系统诊断',
+                            data: [28, 32, 25, 30, 35, 40],
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 数据分析页面的图表
+            initStatisticsCharts();
+        }
+
+        // 初始化数据分析页面的图表
+        function initStatisticsCharts() {
+            // 电池健康状态分布图表
+            const batteryHealthDistributionCtx = document.getElementById('batteryHealthDistributionChart');
+            if (batteryHealthDistributionCtx) {
+                new Chart(batteryHealthDistributionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['特斯拉', '比亚迪', '蔚来', '小鹏', '理想', '其他'],
+                        datasets: [{
+                            label: '良好 (>90%)',
+                            data: [25, 18, 12, 8, 6, 4],
+                            backgroundColor: '#10B981'
+                        }, {
+                            label: '正常 (80-90%)',
+                            data: [15, 12, 8, 6, 4, 3],
+                            backgroundColor: '#3B82F6'
+                        }, {
+                            label: '注意 (70-80%)',
+                            data: [5, 6, 4, 3, 2, 1],
+                            backgroundColor: '#F59E0B'
+                        }, {
+                            label: '需维护 (<70%)',
+                            data: [2, 1, 1, 0, 0, 0],
+                            backgroundColor: '#EF4444'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    usePointStyle: true,
+                                    pointStyle: 'rect'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            },
+                            y: {
+                                stacked: true,
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 检测类型分布图表
+            const detectionTypeCtx = document.getElementById('detectionTypeChart');
+            if (detectionTypeCtx) {
+                new Chart(detectionTypeCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['电池检测', '系统诊断', '电机检测', '充电系统检测', '其他检测'],
+                        datasets: [{
+                            data: [45, 25, 15, 10, 5],
+                            backgroundColor: [
+                                '#3B82F6', // 蓝色
+                                '#8B5CF6', // 紫色
+                                '#10B981', // 绿色
+                                '#F59E0B', // 黄色
+                                '#6B7280'  // 灰色
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${percentage}% (${value}次)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 月度检测趋势图表
+            const monthlyDetectionCtx = document.getElementById('monthlyDetectionChart');
+            if (monthlyDetectionCtx) {
+                new Chart(monthlyDetectionCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+                        datasets: [{
+                            label: '检测次数',
+                            data: [65, 72, 68, 75, 82, 89],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 车辆品牌分布图表
+            const vehicleBrandCtx = document.getElementById('vehicleBrandChart');
+            if (vehicleBrandCtx) {
+                new Chart(vehicleBrandCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['特斯拉', '比亚迪', '蔚来', '小鹏', '理想', '其他'],
+                        datasets: [{
+                            data: [45, 30, 12, 8, 5, 0],
+                            backgroundColor: [
+                                '#3B82F6', // 蓝色
+                                '#10B981', // 绿色
+                                '#8B5CF6', // 紫色
+                                '#F59E0B', // 黄色
+                                '#EF4444', // 红色
+                                '#6B7280'  // 灰色
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    padding: 20,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${percentage}% (${value}辆)`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            }
+
+            // 电池健康度趋势分析图表
+            const batteryHealthTrendCtx = document.getElementById('batteryHealthTrendChart');
+            if (batteryHealthTrendCtx) {
+                new Chart(batteryHealthTrendCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                        datasets: [{
+                            label: '特斯拉',
+                            data: [95, 94, 93, 92, 91, 90, 89, 88, 87, 86, 85, 84],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }, {
+                            label: '比亚迪',
+                            data: [93, 92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82],
+                            borderColor: '#10B981',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }, {
+                            label: '蔚来',
+                            data: [92, 91, 90, 89, 88, 87, 86, 85, 84, 83, 82, 81],
+                            borderColor: '#8B5CF6',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e2e8f0',
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: '#1E293B',
+                                titleColor: '#ffffff',
+                                bodyColor: '#e2e8f0',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                padding: 12
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(75, 85, 99, 0.2)'
+                                },
+                                ticks: {
+                                    color: '#9ca3af',
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                },
+                                min: 80,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // 更新当前时间
+        function updateCurrentTime() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: false
+            };
+            const timeString = now.toLocaleDateString('zh-CN', options).replace(/\//g, '-');
+            
+            // 更新系统概览页面的时间
+            const currentTimeEl = document.getElementById('current-time');
+            if (currentTimeEl) {
+                currentTimeEl.textContent = timeString;
+            }
+            
+            // 更新车辆信息管理页面的时间
+            const vehicleCurrentTimeEl = document.getElementById('vehicle-current-time');
+            if (vehicleCurrentTimeEl) {
+                vehicleCurrentTimeEl.textContent = timeString;
+            }
+            
+            // 更新智能网联管理页面的时间
+            const iotCurrentTimeEl = document.getElementById('iot-current-time');
+            if (iotCurrentTimeEl) {
+                iotCurrentTimeEl.textContent = timeString;
+            }
+        }
+
+        // 初始化粒子背景
+        function initParticleBackground() {
+            const canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            document.getElementById('particleBackground').appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            const particles = [];
+            const particleCount = 100;
+
+            // 创建粒子
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2 + 1,
+                    color: `rgba(${Math.floor(Math.random()*80+180)}, ${Math.floor(Math.random()*80+180)}, ${Math.floor(Math.random()*80+180)}, 0.5)`,
+                    speedX: Math.random() * 0.5 - 0.25,
+                    speedY: Math.random() * 0.5 - 0.25
+                });
+            }
+
+            // 鼠标位置追踪
+            let mouseX = 0, mouseY = 0;
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+
+            // 动画循环
+            function animate() {
+                requestAnimationFrame(animate);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+                particles.forEach(p => {
+                    // 更新位置
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                
+                    // 边界检查
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.y > canvas.height) p.y = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                
+                    // 鼠标交互 - 靠近鼠标的粒子微微偏移
+                    const dx = p.x - mouseX;
+                    const dy = p.y - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 100) {
+                        p.x += dx * 0.01;
+                        p.y += dy * 0.01;
+                    }
+                
+                    // 绘制粒子
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                });
+            
+                // 连接临近粒子
+                connectParticles();
+            }
+
+            // 连接临近的粒子
+            function connectParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                        if (dist < 120) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(200, 200, 255, ${0.2 * (1 - dist/120)})`;
+                            ctx.lineWidth = 0.5;
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+
+            // 启动动画
+            animate();
+
+            // 响应窗口大小变化
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // 初始化迷你图表
+        function initSparklines() {
+            const sparklines = document.querySelectorAll('.sparkline');
+            sparklines.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                const values = canvas.dataset.values.split(',').map(Number);
+                
+                // 设置画布尺寸
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+                canvas.style.width = canvas.offsetWidth + 'px';
+                canvas.style.height = canvas.offsetHeight + 'px';
+                ctx.scale(2, 2);
+                
+                // 计算坐标
+                const width = canvas.offsetWidth;
+                const height = canvas.offsetHeight;
+                const max = Math.max(...values);
+                const min = Math.min(...values);
+                const range = max - min || 1;
+                
+                // 绘制路径
+                ctx.beginPath();
+                ctx.strokeStyle = '#3B82F6';
+                ctx.lineWidth = 2;
+                
+                values.forEach((value, index) => {
+                    const x = (index / (values.length - 1)) * width;
+                    const y = height - ((value - min) / range) * height;
+                    
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                
+                ctx.stroke();
+                
+                // 绘制填充
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.closePath();
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fill();
+            });
+        }
+    </script>
+
+</body></html>

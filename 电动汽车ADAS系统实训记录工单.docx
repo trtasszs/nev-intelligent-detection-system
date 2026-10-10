@@ -1,0 +1,924 @@
+<!DOCTYPE html><html lang="zh-CN"><html lang="zh-CN"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电动汽车基础部件及ADAS系统实训记录工单</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: "Microsoft YaHei", Arial, sans-serif; margin: 20px; line-height: 1.5; }
+        h1, h2, h3 { color: #333; margin-top: 25px; margin-bottom: 15px; }
+        h1 { font-size: 24px; text-align: center; }
+        h2 { font-size: 20px; border-left: 4px solid #0066cc; padding-left: 10px; }
+        h3 { font-size: 18px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px; }
+        th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+        th { background-color: #f5f5f5; font-weight: bold; }
+        .btn-group { text-align: center; margin: 30px 0; }
+        .btn { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            margin: 0 10px; 
+            background-color: #0066cc; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 16px; 
+        }
+        .btn:hover { background-color: #004c99; }
+        .checkbox { display: inline-block; width: 16px; height: 16px; border: 1px solid #ccc; margin: 0 5px; }
+    </style>
+</head>
+<body>
+    <h1>电动汽车基础部件及ADAS系统实训记录工单</h1>
+
+    <!-- 实训基本信息 -->
+    
+            &lt;<table id="basic-info">
+        <tbody><tr><th>实训基本信息<!--</th-->
+            &lt;</th><th>内容<!--</th-->
+        </th></tr>
+        <tr>
+            <td>实训名称</td>
+            <td>电动汽车基础检查、CAN线及ADAS核心部件实训</td>
+        </tr>
+        <tr>
+            <td>实训目的</td>
+            <td>1. 掌握电动汽车基础安全检查及高压断电流程；2. 熟练完成CAN总线系统故障检测与排查；3. 掌握超声波雷达、毫米波雷达、视觉传感器、激光雷达的检查方法；4. 完成ADAS功能验证及多传感器融合标定；5. 规范记录实训数据及故障处理结果</td>
+        </tr>
+        <tr>
+            <td>实训器材</td>
+            <td>安全帽、灭火器、万用表（需校零）、绝缘电阻测试仪、示波器、诊断仪、高速USB-CAN分析仪、千兆网线、232串口线、卷尺、车身挡块、绝缘手套、标定设备、维修工具套装</td>
+        </tr>
+        <tr>
+            <td>实训依据</td>
+            <td>《GB/T 18384.1-2015 电动汽车安全要求》</td>
+        </tr>
+        <tr>
+            <td>实训人员</td>
+            <td><input type="text" style="width: 300px; padding: 5px;" placeholder="请输入姓名"></td>
+        </tr>
+        <tr>
+            <td>实训日期</td>
+            <td><input type="date" style="padding: 5px;"></td>
+        </tr>
+        <tr>
+            <td>车辆信息</td>
+            <td>
+                车型：<input type="text" style="width: 150px; padding: 5px; margin-right: 10px;">
+                车架号：<input type="text" style="width: 200px; padding: 5px; margin-right: 10px;">
+                累计里程：<input type="text" style="width: 100px; padding: 5px; margin-right: 10px;">
+                车辆状态：<input type="checkbox" name="car-status" value="正常">正常 <input type="checkbox" name="car-status" value="故障报修">故障报修
+            </td>
+        </tr>
+    </tbody></table>
+
+    <!-- 一、基础检查（含高压断电） -->
+    <h2>一、基础检查（含高压断电）</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>安全防护：检查安全帽外观无破损后佩戴，确认灭火器压力值处于正常范围。</li>
+        <li>工具与仪表准备：核对所需工具是否齐全，对万用表进行校零并验证工作正常。</li>
+        <li>车身与电源检查：环绕车身一周检查外观，放置车身挡块；测量蓄电池电压并记录。</li>
+        <li>高压断电流程（3分钟内完成“断电-验电-接地”）：
+            <ul>
+                <li>提交高压断电申请；</li>
+                <li>执行高压断电操作；</li>
+                <li>验电确认母线电压≤36V安全值；</li>
+                <li>悬挂接地线；</li>
+                <li>用绝缘电阻测试仪检测高压回路，确保绝缘值≥500Ω/V。</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="basic-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检查标准<!--</th-->
+            &lt;</th><th>检查结果<!--</th-->
+            &lt;</th><th>实测数据<!--</th-->
+            &lt;</th><th>维修/处理意见<!--</th-->
+            &lt;</th><th>检查人签字<!--</th-->
+        </th></tr>
+        <tr>
+            <td>安全帽外观</td>
+            <td>无破损、无变形，可正常佩戴</td>
+            <td><input type="radio" name="helmet" value="是">是 <input type="radio" name="helmet" value="否">否</td>
+            <td>-</td>
+            <td>异常则更换合格安全帽</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>灭火器压力值</td>
+            <td>指针处于正常区间</td>
+            <td><input type="radio" name="fire-extinguisher" value="是">是 <input type="radio" name="fire-extinguisher" value="否">否</td>
+            <td>-</td>
+            <td>压力异常则更换或充装</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>万用表状态</td>
+            <td>校零完成，功能正常</td>
+            <td><input type="radio" name="multimeter" value="是">是 <input type="radio" name="multimeter" value="否">否</td>
+            <td>-</td>
+            <td>异常则检修或更换万用表</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>工具齐全性</td>
+            <td>无缺失、无损坏</td>
+            <td><input type="radio" name="tools" value="是">是 <input type="radio" name="tools" value="否">否</td>
+            <td>-</td>
+            <td>补充缺失工具，修复损坏工具</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>车身外观</td>
+            <td>无明显磕碰、变形</td>
+            <td><input type="radio" name="car-appearance" value="是">是 <input type="radio" name="car-appearance" value="否">否</td>
+            <td>-</td>
+            <td><input type="text" style="width: 200px; padding: 3px;" placeholder="记录损伤位置及程度"></td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>蓄电池电压</td>
+            <td>符合车辆标定标准值</td>
+            <td><input type="radio" name="battery" value="是">是 <input type="radio" name="battery" value="否">否</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> V</td>
+            <td>电压异常则充电或更换蓄电池</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>母线电压（验电）</td>
+            <td>≤36V</td>
+            <td><input type="radio" name="bus-voltage" value="是">是 <input type="radio" name="bus-voltage" value="否">否</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> V</td>
+            <td>超标则重新断电排查漏电点</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+        <tr>
+            <td>高压回路绝缘值</td>
+            <td>≥500Ω/V</td>
+            <td><input type="radio" name="insulation" value="是">是 <input type="radio" name="insulation" value="否">否</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> Ω/V</td>
+            <td>绝缘不良则用分段检测法定位修复</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+        </tr>
+    </tbody></table>
+
+    <!-- 二、CAN总线系统检查 -->
+    <h2>二、CAN总线系统检查</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>故障类型判别：用诊断仪读取故障单元，区分断路故障（可读故障码）和短路故障（无法读故障码）。</li>
+        <li>短路故障检测：测量终端电阻，确定短路类型（对正极/负极/相互短路）；依次断开控制模块插接件，复测终端电阻定位故障单元。</li>
+        <li>断路/节点故障检测：用示波器测量CAN H、CAN L电压波形，判断总线是否断路或节点故障。</li>
+        <li>线路参数验证：用万用表测量CAN H（标准2.7V）、CAN L（标准2.3V）信号电压。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="can-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测工具<!--</th-->
+            &lt;</th><th>实测数据<!--</th-->
+            &lt;</th><th>标准要求<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td>故障类型判别</td>
+            <td>诊断仪读取故障单元</td>
+            <td>诊断仪</td>
+            <td><input type="radio" name="fault-code" value="读取故障码">读取故障码 <input type="radio" name="fault-code" value="未读取故障码">未读取故障码</td>
+            <td>-</td>
+            <td>-</td>
+            <td>读取则按断路处理，未读取则按短路处理</td>
+        </tr>
+        <tr>
+            <td rowspan="3">短路故障</td>
+            <td>终端电阻值</td>
+            <td>万用表</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> Ω</td>
+            <td>车辆规定值</td>
+            <td><input type="radio" name="terminal-resistor" value="正常">正常 <input type="radio" name="terminal-resistor" value="异常">异常</td>
+            <td>异常则检查线束/插接件/模块</td>
+        </tr>
+        <tr>
+            <td>短路类型</td>
+            <td>-</td>
+            <td><input type="radio" name="short-type" value="对正极短路">对正极短路 <input type="radio" name="short-type" value="对负极短路">对负极短路 <input type="radio" name="short-type" value="相互短路">相互短路</td>
+            <td>-</td>
+            <td>-</td>
+            <td>定位短路部位后维修或更换</td>
+        </tr>
+        <tr>
+            <td>故障单元定位</td>
+            <td>诊断仪+万用表</td>
+            <td><input type="text" style="width: 150px; padding: 3px;" placeholder="填写故障单元"></td>
+            <td>-</td>
+            <td>-</td>
+            <td>更换故障线束或控制模块</td>
+        </tr>
+        <tr>
+            <td rowspan="2">断路/节点故障</td>
+            <td>CAN H电压波形</td>
+            <td>示波器</td>
+            <td><input type="text" style="width: 100px; padding: 3px;" placeholder="波形描述"></td>
+            <td>无畸变、符合规范</td>
+            <td><input type="radio" name="can-h-wave" value="正常">正常 <input type="radio" name="can-h-wave" value="异常">异常</td>
+            <td>异常则排查总线断路或节点电源/地线</td>
+        </tr>
+        <tr>
+            <td>CAN L电压波形</td>
+            <td>示波器</td>
+            <td><input type="text" style="width: 100px; padding: 3px;" placeholder="波形描述"></td>
+            <td>无畸变、符合规范</td>
+            <td><input type="radio" name="can-l-wave" value="正常">正常 <input type="radio" name="can-l-wave" value="异常">异常</td>
+            <td>修复断路部位或更换故障节点</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线路参数</td>
+            <td>CAN H信号电压</td>
+            <td>万用表</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> V</td>
+            <td>2.7V</td>
+            <td><input type="radio" name="can-h-voltage" value="正常">正常 <input type="radio" name="can-h-voltage" value="异常">异常</td>
+            <td>电压异常则检修信号线路</td>
+        </tr>
+        <tr>
+            <td>CAN L信号电压</td>
+            <td>万用表</td>
+            <td><input type="text" style="width: 60px; padding: 3px;"> V</td>
+            <td>2.3V</td>
+            <td><input type="radio" name="can-l-voltage" value="正常">正常 <input type="radio" name="can-l-voltage" value="异常">异常</td>
+            <td>电压异常则检修信号线路</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 三、超声波雷达检查 -->
+    <h2>三、超声波雷达检查</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>外观检查：查看雷达探头是否脏污、外壳有无裂痕、是否存在进水/敲击痕迹。</li>
+        <li>安装状态检查：确认安装位置正确、固定紧固、底座无变形。</li>
+        <li>线束及接口检查：检查接口是否虚接、破损、进水；线束是否破损、折断、烧蚀。</li>
+        <li>线路测量：用万用表测量供电电压（标准12V）、搭铁电阻（标准&lt;1Ω）、信号线电压（标准&lt;1Ω）。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="ultrasonic-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>备注说明<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td rowspan="4">外观状态</td>
+            <td>探头脏污</td>
+            <td><input type="radio" name="ultra-dirty" value="正常">正常 <input type="radio" name="ultra-dirty" value="异常">异常</td>
+            <td>-</td>
+            <td>脏污则清洁，严重则更换传感器</td>
+        </tr>
+        <tr>
+            <td>外壳裂痕</td>
+            <td><input type="radio" name="ultra-crack" value="正常">正常 <input type="radio" name="ultra-crack" value="异常">异常</td>
+            <td>-</td>
+            <td>有裂痕则更换传感器</td>
+        </tr>
+        <tr>
+            <td>进水痕迹</td>
+            <td><input type="radio" name="ultra-water" value="正常">正常 <input type="radio" name="ultra-water" value="异常">异常</td>
+            <td>-</td>
+            <td>进水则更换传感器</td>
+        </tr>
+        <tr>
+            <td>敲击痕迹</td>
+            <td><input type="radio" name="ultra-hit" value="正常">正常 <input type="radio" name="ultra-hit" value="异常">异常</td>
+            <td>-</td>
+            <td>损伤严重则更换传感器</td>
+        </tr>
+        <tr>
+            <td rowspan="3">安装状态</td>
+            <td>安装位置正确</td>
+            <td><input type="radio" name="ultra-position" value="正常">正常 <input type="radio" name="ultra-position" value="异常">异常</td>
+            <td>-</td>
+            <td>不正确则重新安装调整</td>
+        </tr>
+        <tr>
+            <td>安装紧固</td>
+            <td><input type="radio" name="ultra-fastened" value="正常">正常 <input type="radio" name="ultra-fastened" value="异常">异常</td>
+            <td>-</td>
+            <td>松动则按标准扭矩紧固</td>
+        </tr>
+        <tr>
+            <td>底座变形</td>
+            <td><input type="radio" name="ultra-base" value="正常">正常 <input type="radio" name="ultra-base" value="异常">异常</td>
+            <td>-</td>
+            <td>变形则更换底座</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线束及接口</td>
+            <td>接口虚接/破损/进水</td>
+            <td><input type="radio" name="ultra-interface" value="正常">正常 <input type="radio" name="ultra-interface" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换或修复接口</td>
+        </tr>
+        <tr>
+            <td>线束破损/折断/烧蚀</td>
+            <td><input type="radio" name="ultra-wire" value="正常">正常 <input type="radio" name="ultra-wire" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换线束</td>
+        </tr>
+        <tr>
+            <td rowspan="3">线路测量</td>
+            <td>供电电压（标准12V）</td>
+            <td><input type="radio" name="ultra-power" value="正常">正常 <input type="radio" name="ultra-power" value="异常">异常</td>
+            <td>实测：<input type="text" style="width: 40px; padding: 3px;"> V</td>
+            <td>未达标则检查供电线路</td>
+        </tr>
+        <tr>
+            <td>搭铁电阻（标准&lt;1Ω）</td>
+            <td><input type="radio" name="ultra-ground" value="正常">正常 <input type="radio" name="ultra-ground" value="异常">异常</td>
+            <td>实测：<input type="text" style="width: 40px; padding: 3px;"> Ω</td>
+            <td>超标则修复搭铁线路</td>
+        </tr>
+        <tr>
+            <td>信号线电压（标准&lt;1Ω）</td>
+            <td><input type="radio" name="ultra-signal" value="正常">正常 <input type="radio" name="ultra-signal" value="异常">异常</td>
+            <td>实测：<input type="text" style="width: 40px; padding: 3px;"> Ω</td>
+            <td>超标则检修信号线路</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 四、毫米波雷达检查 -->
+    <h2>四、毫米波雷达检查</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>外观检查：查看外壳是否破损、有无进水/敲击痕迹。</li>
+        <li>安装状态检查：确认安装位置正确（车前方中心，正面朝人、连接口朝右手边）、固定紧固、底座无变形。</li>
+        <li>线束及接口检查：检查接口是否虚接、破损、进水；线束是否破损、折断、烧蚀。</li>
+        <li>线路测量：用万用表测量供电电压（12V）、搭铁电阻、CAN H（2.7V）、CAN L（2.3V）信号电压。</li>
+        <li>安装验证：按标准扭矩紧固螺栓，正确连接CAN接口及电源（端口1接12V、端口8接GND、端口4接CAN L、端口7接CAN H）。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="millimeter-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>实测数据<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td rowspan="3">外观状态</td>
+            <td>外壳破损</td>
+            <td><input type="radio" name="mm-damage" value="正常">正常 <input type="radio" name="mm-damage" value="异常">异常</td>
+            <td>-</td>
+            <td>破损则更换传感器</td>
+        </tr>
+        <tr>
+            <td>进水痕迹</td>
+            <td><input type="radio" name="mm-water" value="正常">正常 <input type="radio" name="mm-water" value="异常">异常</td>
+            <td>-</td>
+            <td>进水则更换传感器</td>
+        </tr>
+        <tr>
+            <td>敲击痕迹</td>
+            <td><input type="radio" name="mm-hit" value="正常">正常 <input type="radio" name="mm-hit" value="异常">异常</td>
+            <td>-</td>
+            <td>损伤严重则更换传感器</td>
+        </tr>
+        <tr>
+            <td rowspan="3">安装状态</td>
+            <td>安装位置正确</td>
+            <td><input type="radio" name="mm-position" value="正常">正常 <input type="radio" name="mm-position" value="异常">异常</td>
+            <td>-</td>
+            <td>不正确则重新安装调整</td>
+        </tr>
+        <tr>
+            <td>安装紧固</td>
+            <td><input type="radio" name="mm-fastened" value="正常">正常 <input type="radio" name="mm-fastened" value="异常">异常</td>
+            <td>-</td>
+            <td>松动则按标准扭矩紧固</td>
+        </tr>
+        <tr>
+            <td>底座变形</td>
+            <td><input type="radio" name="mm-base" value="正常">正常 <input type="radio" name="mm-base" value="异常">异常</td>
+            <td>-</td>
+            <td>变形则更换底座</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线束及接口</td>
+            <td>接口虚接/破损/进水</td>
+            <td><input type="radio" name="mm-interface" value="正常">正常 <input type="radio" name="mm-interface" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换或修复接口</td>
+        </tr>
+        <tr>
+            <td>线束破损/折断/烧蚀</td>
+            <td><input type="radio" name="mm-wire" value="正常">正常 <input type="radio" name="mm-wire" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换线束</td>
+        </tr>
+        <tr>
+            <td rowspan="4">线路测量</td>
+            <td>供电电压（标准12V）</td>
+            <td><input type="radio" name="mm-power" value="正常">正常 <input type="radio" name="mm-power" value="异常">异常</td>
+            <td><input type="text" style="width: 40px; padding: 3px;"> V</td>
+            <td>未达标则检查供电线路</td>
+        </tr>
+        <tr>
+            <td>搭铁电阻</td>
+            <td><input type="radio" name="mm-ground" value="正常">正常 <input type="radio" name="mm-ground" value="异常">异常</td>
+            <td><input type="text" style="width: 40px; padding: 3px;"> Ω</td>
+            <td>异常则修复搭铁线路</td>
+        </tr>
+        <tr>
+            <td>CAN H信号电压（2.7V）</td>
+            <td><input type="radio" name="mm-can-h" value="正常">正常 <input type="radio" name="mm-can-h" value="异常">异常</td>
+            <td><input type="text" style="width: 40px; padding: 3px;"> V</td>
+            <td>未达标则检修信号线路</td>
+        </tr>
+        <tr>
+            <td>CAN L信号电压（2.3V）</td>
+            <td><input type="radio" name="mm-can-l" value="正常">正常 <input type="radio" name="mm-can-l" value="异常">异常</td>
+            <td><input type="text" style="width: 40px; padding: 3px;"> V</td>
+            <td>未达标则检修信号线路</td>
+        </tr>
+        <tr>
+            <td>安装验证</td>
+            <td>接口连接正确性</td>
+            <td><input type="radio" name="mm-connection" value="正常">正常 <input type="radio" name="mm-connection" value="异常">异常</td>
+            <td>-</td>
+            <td>错误则重新按定义连接</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 五、视觉传感器检查（前视+环视） -->
+    <h2>五、视觉传感器检查（前视+环视）</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>外观检查：查看外壳是否破损、镜头有无裂痕、是否存在进水/敲击痕迹、有无遮挡/脏污。</li>
+        <li>安装状态检查：确认安装位置正确、固定紧固、底座无变形。</li>
+        <li>线束及接口检查：检查接口是否虚接、破损、进水；线束是否破损、折断、烧蚀。</li>
+        <li>功能预检测：上电后确认传感器数据传输正常，无信号中断。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="vision-check">
+        <tbody><tr><th>传感器类型<!--</th-->
+            &lt;</th><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td rowspan="11">前视视觉传感器</td>
+            <td rowspan="4">外观状态</td>
+            <td>外壳破损</td>
+            <td><input type="radio" name="front-damage" value="正常">正常 <input type="radio" name="front-damage" value="异常">异常</td>
+            <td>破损则更换传感器</td>
+        </tr>
+        <tr>
+            <td>镜头裂痕</td>
+            <td><input type="radio" name="front-lens" value="正常">正常 <input type="radio" name="front-lens" value="异常">异常</td>
+            <td>有裂痕则更换传感器</td>
+        </tr>
+        <tr>
+            <td>进水/敲击痕迹</td>
+            <td><input type="radio" name="front-trace" value="正常">正常 <input type="radio" name="front-trace" value="异常">异常</td>
+            <td>进水则更换传感器</td>
+        </tr>
+        <tr>
+            <td>遮挡/脏污</td>
+            <td><input type="radio" name="front-block" value="正常">正常 <input type="radio" name="front-block" value="异常">异常</td>
+            <td>遮挡则清理，严重则更换</td>
+        </tr>
+        <tr>
+            <td rowspan="3">安装状态</td>
+            <td>安装位置正确</td>
+            <td><input type="radio" name="front-position" value="正常">正常 <input type="radio" name="front-position" value="异常">异常</td>
+            <td>不正确则重新安装调整</td>
+        </tr>
+        <tr>
+            <td>安装紧固</td>
+            <td><input type="radio" name="front-fastened" value="正常">正常 <input type="radio" name="front-fastened" value="异常">异常</td>
+            <td>松动则紧固</td>
+        </tr>
+        <tr>
+            <td>底座变形</td>
+            <td><input type="radio" name="front-base" value="正常">正常 <input type="radio" name="front-base" value="异常">异常</td>
+            <td>变形则更换底座</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线束及接口</td>
+            <td>接口虚接/破损/进水</td>
+            <td><input type="radio" name="front-interface" value="正常">正常 <input type="radio" name="front-interface" value="异常">异常</td>
+            <td>异常则更换或修复</td>
+        </tr>
+        <tr>
+            <td>线束破损/折断/烧蚀</td>
+            <td><input type="radio" name="front-wire" value="正常">正常 <input type="radio" name="front-wire" value="异常">异常</td>
+            <td>异常则更换线束</td>
+        </tr>
+        <tr>
+            <td rowspan="2">功能预检测</td>
+            <td>数据传输状态</td>
+            <td><input type="radio" name="front-data" value="正常">正常 <input type="radio" name="front-data" value="异常">异常</td>
+            <td>异常则排查线路或控制模块</td>
+        </tr>
+        <tr>
+            <td>无信号中断</td>
+            <td><input type="radio" name="front-signal" value="正常">正常 <input type="radio" name="front-signal" value="异常">异常</td>
+            <td>异常则排查线路或控制模块</td>
+        </tr>
+        <tr>
+            <td rowspan="11">环视视觉传感器</td>
+            <td rowspan="4">外观状态</td>
+            <td>外壳破损</td>
+            <td><input type="radio" name="surround-damage" value="正常">正常 <input type="radio" name="surround-damage" value="异常">异常</td>
+            <td>破损则更换传感器</td>
+        </tr>
+        <tr>
+            <td>镜头裂痕</td>
+            <td><input type="radio" name="surround-lens" value="正常">正常 <input type="radio" name="surround-lens" value="异常">异常</td>
+            <td>有裂痕则更换传感器</td>
+        </tr>
+        <tr>
+            <td>进水/敲击痕迹</td>
+            <td><input type="radio" name="surround-trace" value="正常">正常 <input type="radio" name="surround-trace" value="异常">异常</td>
+            <td>进水则更换传感器</td>
+        </tr>
+        <tr>
+            <td>遮挡/泥沙</td>
+            <td><input type="radio" name="surround-block" value="正常">正常 <input type="radio" name="surround-block" value="异常">异常</td>
+            <td>遮挡则清理，严重则更换</td>
+        </tr>
+        <tr>
+            <td rowspan="3">安装状态</td>
+            <td>安装位置正确</td>
+            <td><input type="radio" name="surround-position" value="正常">正常 <input type="radio" name="surround-position" value="异常">异常</td>
+            <td>不正确则重新安装调整</td>
+        </tr>
+        <tr>
+            <td>安装紧固</td>
+            <td><input type="radio" name="surround-fastened" value="正常">正常 <input type="radio" name="surround-fastened" value="异常">异常</td>
+            <td>松动则紧固</td>
+        </tr>
+        <tr>
+            <td>底座变形</td>
+            <td><input type="radio" name="surround-base" value="正常">正常 <input type="radio" name="surround-base" value="异常">异常</td>
+            <td>变形则更换底座</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线束及接口</td>
+            <td>接口虚接/破损/进水</td>
+            <td><input type="radio" name="surround-interface" value="正常">正常 <input type="radio" name="surround-interface" value="异常">异常</td>
+            <td>异常则更换或修复</td>
+        </tr>
+        <tr>
+            <td>线束破损/折断/烧蚀</td>
+            <td><input type="radio" name="surround-wire" value="正常">正常 <input type="radio" name="surround-wire" value="异常">异常</td>
+            <td>异常则更换线束</td>
+        </tr>
+        <tr>
+            <td rowspan="2">功能预检测</td>
+            <td>数据传输状态</td>
+            <td><input type="radio" name="surround-data" value="正常">正常 <input type="radio" name="surround-data" value="异常">异常</td>
+            <td>异常则排查线路或控制模块</td>
+        </tr>
+        <tr>
+            <td>无信号中断</td>
+            <td><input type="radio" name="surround-signal" value="正常">正常 <input type="radio" name="surround-signal" value="异常">异常</td>
+            <td>异常则排查线路或控制模块</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 六、激光雷达检查 -->
+    <h2>六、激光雷达检查</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>外观检查：查看外壳是否破损、有无脏污/冰雪/泥沙覆盖、是否存在敲击痕迹。</li>
+        <li>安装状态检查：确认安装位置正确、固定紧固、底座无变形。</li>
+        <li>线束及接口检查：检查接口是否虚接、破损、进水；线束是否破损、折断、烧蚀。</li>
+        <li>功能预检测：上电后确认传感器数据输出正常，无故障报警。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="laser-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>备注说明<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td rowspan="3">外观状态</td>
+            <td>外壳破损</td>
+            <td><input type="radio" name="laser-damage" value="正常">正常 <input type="radio" name="laser-damage" value="异常">异常</td>
+            <td>-</td>
+            <td>破损则更换传感器</td>
+        </tr>
+        <tr>
+            <td>脏污/冰雪/泥沙</td>
+            <td><input type="radio" name="laser-dirty" value="正常">正常 <input type="radio" name="laser-dirty" value="异常">异常</td>
+            <td>-</td>
+            <td>脏污则清理，严重则更换</td>
+        </tr>
+        <tr>
+            <td>敲击痕迹</td>
+            <td><input type="radio" name="laser-hit" value="正常">正常 <input type="radio" name="laser-hit" value="异常">异常</td>
+            <td>-</td>
+            <td>损伤严重则更换传感器</td>
+        </tr>
+        <tr>
+            <td rowspan="3">安装状态</td>
+            <td>安装位置正确</td>
+            <td><input type="radio" name="laser-position" value="正常">正常 <input type="radio" name="laser-position" value="异常">异常</td>
+            <td>-</td>
+            <td>不正确则重新安装调整</td>
+        </tr>
+        <tr>
+            <td>安装紧固</td>
+            <td><input type="radio" name="laser-fastened" value="正常">正常 <input type="radio" name="laser-fastened" value="异常">异常</td>
+            <td>-</td>
+            <td>松动则按标准扭矩紧固</td>
+        </tr>
+        <tr>
+            <td>底座变形</td>
+            <td><input type="radio" name="laser-base" value="正常">正常 <input type="radio" name="laser-base" value="异常">异常</td>
+            <td>-</td>
+            <td>变形则更换底座</td>
+        </tr>
+        <tr>
+            <td rowspan="2">线束及接口</td>
+            <td>接口虚接/破损/进水</td>
+            <td><input type="radio" name="laser-interface" value="正常">正常 <input type="radio" name="laser-interface" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换或修复接口</td>
+        </tr>
+        <tr>
+            <td>线束破损/折断/烧蚀</td>
+            <td><input type="radio" name="laser-wire" value="正常">正常 <input type="radio" name="laser-wire" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则更换线束</td>
+        </tr>
+        <tr>
+            <td>功能预检测</td>
+            <td>数据输出状态（无故障报警）</td>
+            <td><input type="radio" name="laser-data" value="正常">正常 <input type="radio" name="laser-data" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则转维修部门进一步诊断</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 七、融合标定 -->
+    <h2>七、融合标定</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>标定准备：安装标定靶板，确保车辆处于水平场地，固定车轮。</li>
+        <li>设备连接：将标定设备与车辆工控机、传感器建立通信。</li>
+        <li>数据采集：启动标定软件，采集各传感器原始数据（含车辆参数：轴距、轮距、轮胎半径/宽度）。</li>
+        <li>融合标定：执行多传感器融合标定算法，调整传感器参数至匹配状态。</li>
+        <li>结果验证：通过诊断仪读取标定结果，确认无标定偏差报警。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="calibration-check">
+        <tbody><tr><th>标定项目<!--</th-->
+            &lt;</th><th>使用设备<!--</th-->
+            &lt;</th><th>车辆参数（实测）<!--</th-->
+            &lt;</th><th>标定结果<!--</th-->
+            &lt;</th><th>调整意见<!--</th-->
+        </th></tr>
+        <tr>
+            <td rowspan="2">多传感器融合标定</td>
+            <td rowspan="2">标定靶板、标定软件、工控机</td>
+            <td>轴距：<input type="text" style="width: 60px; padding: 3px;"> m</td>
+            <td rowspan="2"><input type="radio" name="calibration-result" value="合格">合格 <input type="radio" name="calibration-result" value="不合格">不合格</td>
+            <td rowspan="2">不合格则重新调整传感器位置后复标</td>
+        </tr>
+        <tr>
+            <td>轮距：<input type="text" style="width: 60px; padding: 3px;"> m 轮胎半径：<input type="text" style="width: 60px; padding: 3px;"> m 轮胎宽度：<input type="text" style="width: 60px; padding: 3px;"> m</td>
+        </tr>
+        <tr>
+            <td>标定结果验证</td>
+            <td>诊断仪</td>
+            <td>-</td>
+            <td><input type="radio" name="calibration-verify" value="无偏差报警">无偏差报警 <input type="radio" name="calibration-verify" value="存在偏差报警">存在偏差报警</td>
+            <td>有报警则排查传感器安装或参数设置</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 八、ADAS功能检查 -->
+    <h2>八、ADAS功能检查</h2>
+    <h3>（一）操作步骤</h3>
+    <ol>
+        <li>车辆起动：踩刹车上电，确认车辆能否正常进入Ready状态。</li>
+        <li>按键检查：确认ADAS功能设置按键位置（转向盘/中控台/中控屏），测试按键响应是否正常。</li>
+        <li>功能验证：测试自适应巡航功能，观察是否能正常跟随、调速。</li>
+        <li>故障报警检查：记录一级故障报警情况（如毫米波雷达损坏、倒车雷达未工作等）。</li>
+    </ol>
+
+    <h3>（二）实训记录</h3>
+    
+            &lt;<table id="adas-check">
+        <tbody><tr><th>检查项目<!--</th-->
+            &lt;</th><th>检测内容<!--</th-->
+            &lt;</th><th>检测结果<!--</th-->
+            &lt;</th><th>备注说明<!--</th-->
+            &lt;</th><th>处理措施<!--</th-->
+        </th></tr>
+        <tr>
+            <td>车辆起动</td>
+            <td>进入Ready状态</td>
+            <td><input type="radio" name="adas-start" value="正常">正常 <input type="radio" name="adas-start" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则排查电源或控制模块</td>
+        </tr>
+        <tr>
+            <td rowspan="2">按键检查</td>
+            <td>按键位置识别</td>
+            <td>转向盘：<input type="checkbox" name="adas-key" value="转向盘"> 中控台：<input type="checkbox" name="adas-key" value="中控台"> 中控屏：<input type="checkbox" name="adas-key" value="中控屏"></td>
+            <td>-</td>
+            <td>未找到则查阅车辆手册</td>
+        </tr>
+        <tr>
+            <td>按键响应正常</td>
+            <td><input type="radio" name="adas-key-response" value="正常">正常 <input type="radio" name="adas-key-response" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则检查按键线路或控制模块</td>
+        </tr>
+        <tr>
+            <td>功能验证</td>
+            <td>自适应巡航功能</td>
+            <td><input type="radio" name="adas-cruise" value="正常">正常 <input type="radio" name="adas-cruise" value="异常">异常</td>
+            <td>-</td>
+            <td>异常则排查雷达或控制算法</td>
+        </tr>
+        <tr>
+            <td>故障报警</td>
+            <td>一级故障报警情况</td>
+            <td><input type="radio" name="adas-alarm" value="无报警">无报警 <input type="radio" name="adas-alarm" value="毫米波雷达损坏">毫米波雷达损坏 <input type="radio" name="adas-alarm" value="倒车雷达未工作">倒车雷达未工作 <input type="radio" name="adas-alarm" value="其他">其他：<input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+            <td>按报警类型排查对应部件</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 九、维修结果检验 -->
+    <h2>九、维修结果检验</h2>
+    
+            &lt;<table id="repair-check">
+        <tbody><tr><th>检验项目<!--</th-->
+            &lt;</th><th>检验结果<!--</th-->
+            &lt;</th><th>检查人确认<!--</th-->
+            &lt;</th><th>备注<!--</th-->
+        </th></tr>
+        <tr>
+            <td>各传感器线路恢复正常</td>
+            <td><input type="radio" name="repair-wire" value="是">是 <input type="radio" name="repair-wire" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>各线路电压符合标准值</td>
+            <td><input type="radio" name="repair-voltage" value="是">是 <input type="radio" name="repair-voltage" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>故障部件已正常工作</td>
+            <td><input type="radio" name="repair-part" value="是">是 <input type="radio" name="repair-part" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>ADAS系统功能恢复正常</td>
+            <td><input type="radio" name="repair-adas" value="是">是 <input type="radio" name="repair-adas" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>维修工具已整理归位</td>
+            <td><input type="radio" name="repair-tool" value="是">是 <input type="radio" name="repair-tool" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>实训工位已打扫干净</td>
+            <td><input type="radio" name="repair-workstation" value="是">是 <input type="radio" name="repair-workstation" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+        <tr>
+            <td>实训记录工单填写完整</td>
+            <td><input type="radio" name="repair-form" value="是">是 <input type="radio" name="repair-form" value="否">否</td>
+            <td><input type="text" style="width: 100px; padding: 3px;"></td>
+            <td>-</td>
+        </tr>
+    </tbody></table>
+
+    <!-- 十、实训总结 -->
+    <h2>十、实训总结</h2>
+    
+            &lt;
+            &lt;<table id="summary">
+        <tbody><tr><th>实训心得<!--</th-->
+            </th><td><textarea style="width: 100%; height: 80px; padding: 10px; resize: vertical;" placeholder="请填写实训心得"></textarea></td>
+        </tr>
+        <tr><th>问题反思与改进建议<!--</th-->
+            </th><td><textarea style="width: 100%; height: 80px; padding: 10px; resize: vertical;" placeholder="请填写问题反思与改进建议"></textarea></td>
+        </tr>
+    </tbody></table>
+
+    <!-- 签字确认 -->
+    <h2>签字确认</h2>
+    
+            &lt;
+            &lt;
+            &lt;<table id="signature">
+        <tbody><tr><th>实训人员签字<!--</th-->
+            </th><td><input type="text" style="width: 150px; padding: 5px;"></td><th>指导教师签字<!--</th-->
+            </th><td><input type="text" style="width: 150px; padding: 5px;"></td><th>日期<!--</th-->
+            </th><td><input type="date" style="padding: 5px;"></td>
+        </tr>
+    </tbody></table>
+
+    <!-- 下载按钮 -->
+    <div class="btn-group">
+        <button class="btn" id="download-word">下载Word文件</button>
+        <button class="btn" id="download-excel">下载Excel文件</button>
+    </div>
+
+    <script>
+        // 下载Word文件（将HTML转换为DOCX格式）
+        document.getElementById('download-word').addEventListener('click', function() {
+            // 创建HTML内容（包含所有表格和输入内容）
+            let htmlContent = document.documentElement.outerHTML;
+            
+            // 创建Blob对象
+            const blob = new Blob(['<!DOCTYPE html><html lang="zh-CN">' + htmlContent + '</html>'], {
+                type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            });
+            
+            // 创建下载链接
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '电动汽车ADAS系统实训记录工单.docx';
+            document.body.appendChild(a);
+            a.click();
+            
+            // 释放URL对象
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        });
+
+        // 下载Excel文件（使用SheetJS库）
+        document.getElementById('download-excel').addEventListener('click', function() {
+            const wb = XLSX.utils.book_new();
+            wb.Props = {
+                Title: "电动汽车ADAS系统实训记录工单",
+                Subject: "实训记录",
+                Author: "实训人员",
+                CreatedDate: new Date()
+            };
+
+            // 处理所有表格数据
+            const tables = document.querySelectorAll('table');
+            tables.forEach((table, index) => {
+                const tableName = table.id || `表格${index + 1}`;
+                const ws = XLSX.utils.table_to_sheet(table);
+                XLSX.utils.book_append_sheet(wb, ws, tableName);
+            });
+
+            // 生成Excel文件并下载
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+            const blob = new Blob([wbout], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '电动汽车ADAS系统实训记录工单.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        });
+    </script>
+
+
+</body></html></html>

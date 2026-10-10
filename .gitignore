@@ -1,0 +1,56 @@
+# 大体积素材：比赛 PPT / 演示视频（单文件超 GitHub 100MB 硬限，且非源码）
+*.pptx
+*.ppt
+*.mp4
+*.mov
+*.avi
+*.mkv
+视频/
+
+# 副本文件
+* - 副本*
+*副本*
+
+# 构建产物（体积大，源码仓库不需要）
+打包/
+dist/
+dist2/
+dist3/
+dist_dir/
+build*/
+*.spec.bak
+
+# 可执行文件与发布包
+*.exe
+*.zip
+*.7z
+*.rar
+
+# 页面/脚本的历史备份（本项目 apply_*.py 每次跑都会留备份）
+*.bak
+*.bak-*
+*.bak2-*
+*.bak3-*
+*.old
+
+# 运行日志
+*日志*.txt
+*.log
+
+# 配置：含 API Key 字段，绝不入库
+config.json
+!config.example.json
+**/config.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+~$*

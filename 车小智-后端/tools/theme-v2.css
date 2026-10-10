@@ -1,0 +1,684 @@
+/* ============================================================================
+   车小智 · CYBER THEME v2
+   设计语言：
+     · 几何 —— 直角/切角面板、1px 发丝线，取代圆角玻璃卡与泛光描边
+     · 构件 —— 四角括号、边缘刻度尺、模块编号、序列号、引线标注、跑马遥测
+     · 动感 —— 全局扫描带、canvas 粒子场、滚动揭示、数字滚动、卡片扫描、悬停微动
+     · 克制 —— 辉光只给"热"元素（状态点/数据包/主按钮），其余靠线条精度取胜
+   只覆盖视觉表现，不改动内容结构。
+   ========================================================================== */
+:root {
+    --cy: #35E0FF;
+    --cy-l: #A8F2FF;
+    --cy-d: #0E7C99;
+    --gr: #7CFFB2;
+    --am: #FFB020;
+    --rd: #FF4D6D;
+    --bg0: #05070C;
+    --bg1: #0A1018;
+    --bg2: #0E1622;
+    --bg3: #132032;
+    --hair: rgba(120, 200, 255, .14);
+    --hair-s: rgba(120, 200, 255, .07);
+    --tx: #E6F0FA;
+    --tx-m: #8FA6BE;
+    --tx-l: #5A6E86;
+    --mono: "JetBrains Mono", Consolas, Menlo, monospace;
+    --ease: cubic-bezier(.2, .7, .3, 1);
+}
+
+html { background: var(--bg0); scroll-behavior: smooth; }
+
+body {
+    background-color: var(--bg0);
+    background-image:
+        radial-gradient(1200px 700px at 78% -12%, rgba(53, 224, 255, .085), transparent 60%),
+        radial-gradient(900px 620px at 6% 34%, rgba(124, 255, 178, .04), transparent 62%),
+        linear-gradient(rgba(120, 200, 255, .026) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 200, 255, .026) 1px, transparent 1px);
+    background-size: auto, auto, 52px 52px, 52px 52px;
+    background-attachment: fixed, fixed, fixed, fixed;
+    color: var(--tx);
+}
+
+/* 胶片颗粒：去掉 CSS 渐变的"塑料感" */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image: url("assets/cyber/noise.svg");
+    background-size: 180px 180px;
+    opacity: .055;
+    mix-blend-mode: overlay;
+}
+
+/* 全局扫描亮带已移除：横穿整屏移动会持续抢视线 */
+
+::selection { background: rgba(53, 224, 255, .3); color: #EAFBFF; }
+
+/* ---------------------------------------------------------------- 滚动条 */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #06090F; }
+::-webkit-scrollbar-thumb { background: #16394B; border: 2px solid #06090F; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: var(--cy-d); }
+
+/* ---------------------------------------------------------------- 排版 */
+h1, h2, h3, h4, h5 { letter-spacing: .01em; }
+h1 { font-weight: 800; }
+h2 { font-weight: 800; }
+section h2 { text-shadow: 0 0 34px rgba(53, 224, 255, .16); }
+
+.gradient-text {
+    background-image: linear-gradient(100deg, #EAFBFF 0%, var(--cy) 42%, var(--gr) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    /* 不要加 filter —— 会让 Chrome 放弃 background-clip:text */
+    text-shadow: none;
+}
+
+/* ---------------------------------------------------------------- HUD 构件 */
+/* 模块标签（JS 注入到各章节标题上方） */
+.hud-tag {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--cy-l);
+    opacity: .85;
+    margin-bottom: 12px;
+}
+.hud-tag i {
+    display: inline-block;
+    width: 20px; height: 1px;
+    background: var(--cy);
+    vertical-align: middle;
+    margin-right: 10px;
+    box-shadow: 0 0 8px var(--cy);
+}
+/* 标题下的刻度尺 */
+.hud-rule {
+    position: relative;
+    height: 9px;
+    margin: 16px auto 0;
+    max-width: 560px;
+    background:
+        linear-gradient(90deg, transparent, var(--hair) 14%, var(--hair) 86%, transparent) center top/100% 1px no-repeat,
+        repeating-linear-gradient(90deg, var(--hair) 0 1px, transparent 1px 14px) center bottom/100% 5px no-repeat;
+}
+.hud-rule::before {
+    content: '';
+    position: absolute;
+    left: 50%; top: -3px;
+    width: 7px; height: 7px;
+    margin-left: -3.5px;
+    background: var(--cy);
+    transform: rotate(45deg);
+    box-shadow: 0 0 12px var(--cy);
+}
+/* 章节右上角序列号（JS 注入） */
+.hud-sn {
+    position: absolute;
+    top: 18px; right: 22px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--tx-l);
+    opacity: .5;
+    pointer-events: none;
+}
+/* 章节顶边的刻度线（绝对定位，不占高度） */
+section { position: relative; }
+section + section::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--hair) 15%, rgba(53, 224, 255, .3) 50%, var(--hair) 85%, transparent);
+}
+section + section::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: -2px;
+    width: 5px; height: 5px;
+    margin-left: -2.5px;
+    background: var(--cy);
+    transform: rotate(45deg);
+    opacity: .8;
+}
+
+/* ---------------------------------------------------------------- 面板 */
+.bg-white {
+    background-color: rgba(10, 16, 24, .92) !important;
+    background-image: linear-gradient(180deg, rgba(53, 224, 255, .04), rgba(53, 224, 255, 0) 38%) !important;
+}
+
+/* 卡片：直角 + 发丝描边 + 四角括号（8 层背景渐变实现，不额外占位） */
+.bg-white.rounded-lg, .bg-white.rounded-xl, .bg-white.rounded-2xl,
+.rounded-xl.shadow-lg, .rounded-xl.shadow-md, .rounded-2xl.shadow-xl {
+    border-radius: 2px !important;
+    border: 1px solid var(--hair) !important;
+    border-top-color: rgba(53, 224, 255, .3) !important;
+    background-image:
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(rgba(53, 224, 255, .55), rgba(53, 224, 255, .55)),
+        linear-gradient(180deg, rgba(53, 224, 255, .05), rgba(53, 224, 255, 0) 38%) !important;
+    background-size:
+        15px 1px, 1px 15px, 15px 1px, 1px 15px,
+        15px 1px, 1px 15px, 15px 1px, 1px 15px,
+        100% 100% !important;
+    background-position:
+        left top, left top, right top, right top,
+        left bottom, left bottom, right bottom, right bottom,
+        left top !important;
+    background-repeat: no-repeat !important;
+    box-shadow: 0 26px 60px -40px rgba(0, 0, 0, .9) !important;
+}
+
+/* 悬停：描边点亮 + 扫描线扫过一次 */
+.card-hover {
+    position: relative;
+    overflow: hidden;
+    transition: transform .4s var(--ease), border-color .3s, box-shadow .4s var(--ease);
+}
+.card-hover:hover {
+    transform: translateY(-5px);
+    border-color: rgba(53, 224, 255, .5) !important;
+    box-shadow: 0 30px 70px -34px rgba(53, 224, 255, .8) !important;
+}
+.card-hover::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; top: -45%; height: 45%;
+    background: linear-gradient(180deg, transparent, rgba(53, 224, 255, .13), transparent);
+    opacity: 0;
+    pointer-events: none;
+}
+.card-hover:hover::after { opacity: 1; animation: cy-cardsweep 1.5s linear infinite; }
+@keyframes cy-cardsweep { 0% { transform: translateY(0) } 100% { transform: translateY(330%) } }
+
+/* ---------------------------------------------------------------- 按钮 */
+.gradient-bg {
+    border-radius: 2px !important;
+    background-image: linear-gradient(180deg, #14A9CE 0%, #0A7FA0 48%, #075E77 100%) !important;
+    box-shadow: inset 0 1px 0 rgba(168, 242, 255, .5), 0 12px 30px -18px rgba(53, 224, 255, .95) !important;
+    position: relative;
+    overflow: hidden;
+    transition: filter .25s, box-shadow .3s;
+}
+.gradient-bg:hover {
+    filter: brightness(1.14);
+    box-shadow: inset 0 1px 0 rgba(168, 242, 255, .85), 0 16px 38px -16px rgba(53, 224, 255, 1) !important;
+}
+.gradient-bg::after {
+    content: '';
+    position: absolute;
+    top: -20%; bottom: -20%; width: 38%;
+    left: -60%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .3), transparent);
+    transform: skewX(-20deg);
+    transition: left .6s var(--ease);
+    pointer-events: none;
+}
+.gradient-bg:hover::after { left: 130%; }
+
+.gradient-bg-green {
+    border-radius: 2px !important;
+    background-image: linear-gradient(180deg, #46D98F 0%, #17A868 50%, #0C7B4A 100%) !important;
+    box-shadow: inset 0 1px 0 rgba(198, 255, 226, .45), 0 12px 30px -18px rgba(124, 255, 178, .9) !important;
+}
+
+/* ---------------------------------------------------------------- 导航 */
+nav.bg-white {
+    background-color: rgba(5, 7, 12, .84) !important;
+    background-image: linear-gradient(180deg, rgba(53, 224, 255, .05), rgba(53, 224, 255, 0)) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+    border-bottom: 1px solid var(--hair) !important;
+    box-shadow: 0 22px 54px -38px rgba(53, 224, 255, .95) !important;
+}
+nav::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cy) 22%, var(--gr) 50%, var(--cy) 78%, transparent);
+    opacity: .45;
+}
+nav a { position: relative; }
+nav a::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -6px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cy), transparent);
+    transform: scaleX(0);
+    transition: transform .3s var(--ease);
+}
+nav a:hover::after { transform: scaleX(1); }
+nav a:hover { color: var(--cy-l) !important; }
+
+/* ---------------------------------------------------------------- 页脚 */
+footer { position: relative; }
+footer.bg-neutral-dark {
+    background-color: #04060A !important;
+    background-image: linear-gradient(180deg, rgba(53, 224, 255, .045), transparent 42%) !important;
+    border-top: 1px solid var(--hair);
+}
+footer::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 40px;
+    background: url("assets/cyber/circuit-divider.svg") center top / 100% auto no-repeat;
+    opacity: .55;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- 表单 */
+input, textarea, select {
+    background-color: rgba(5, 8, 14, .8) !important;
+    color: var(--tx) !important;
+    caret-color: var(--cy);
+    border-radius: 1px !important;
+}
+input::placeholder, textarea::placeholder { color: #4C6178; }
+input:focus, textarea:focus, select:focus {
+    border-color: rgba(53, 224, 255, .65) !important;
+    box-shadow: 0 0 0 1px rgba(53, 224, 255, .25), 0 0 22px -8px rgba(53, 224, 255, .9);
+    outline: none;
+}
+
+/* ---------------------------------------------------------------- 首屏 */
+#cy-fx {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .9;
+}
+#home h1 { text-shadow: 0 0 46px rgba(53, 224, 255, .2); }
+#home .absolute.inset-0 img { opacity: .55; }
+#home img[alt="新能源汽车AI诊断"] {
+    border: 1px solid rgba(53, 224, 255, .22);
+    border-radius: 2px !important;
+    background: #060B12;
+}
+/* 首屏视觉框：外扩四角括号 */
+.cy-visual { position: relative; }
+.cy-visual::before {
+    content: '';
+    position: absolute;
+    inset: -16px;
+    pointer-events: none;
+    border: 1px solid var(--hair-s);
+    background:
+        linear-gradient(var(--cy), var(--cy)) left top/20px 1px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) left top/1px 20px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) right top/20px 1px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) right top/1px 20px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) left bottom/20px 1px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) left bottom/1px 20px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) right bottom/20px 1px no-repeat,
+        linear-gradient(var(--cy), var(--cy)) right bottom/1px 20px no-repeat;
+    opacity: .75;
+}
+/* 首屏遥测跑马灯 */
+.cy-ticker {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 34px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    border-top: 1px solid var(--hair);
+    background: linear-gradient(90deg, rgba(5, 7, 12, .96), rgba(10, 16, 24, .7) 50%, rgba(5, 7, 12, .96));
+    z-index: 2;
+}
+.cy-ticker__track {
+    display: flex;
+    white-space: nowrap;
+    animation: cy-marquee 42s linear infinite;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    color: var(--tx-l);
+}
+.cy-ticker__track > span { padding-right: 56px; }
+.cy-ticker__track b { color: var(--cy-l); font-weight: 500; }
+.cy-ticker__track em { color: var(--gr); font-style: normal; }
+@keyframes cy-marquee { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
+/* 两端渐隐，避免文字硬切 */
+.cy-ticker::before, .cy-ticker::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; width: 140px;
+    z-index: 1;
+    pointer-events: none;
+}
+.cy-ticker::before { left: 0; background: linear-gradient(90deg, #05070C, rgba(5, 7, 12, 0)); }
+.cy-ticker::after { right: 0; background: linear-gradient(270deg, #05070C, rgba(5, 7, 12, 0)); }
+
+/* ---------------------------------------------------------------- 章节幽灵编号 */
+section .text-center { position: relative; z-index: 1; }
+.hud-ghost {
+    position: absolute;
+    top: -54px; left: 50%;
+    transform: translateX(-50%);
+    z-index: -1;
+    font-family: var(--mono);
+    font-size: 168px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -.05em;
+    color: rgba(53, 224, 255, .045);
+    -webkit-text-stroke: 1px rgba(120, 200, 255, .07);
+    pointer-events: none;
+    user-select: none;
+    white-space: nowrap;
+}
+
+/* 首屏统计数字 */
+.cy-stat { font-family: var(--mono); color: var(--cy-l); }
+
+/* ---------------------------------------------------------------- 滚动进度 */
+.cy-progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    width: 0;
+    z-index: 60;
+    background: linear-gradient(90deg, var(--cy), var(--gr));
+    box-shadow: 0 0 14px rgba(53, 224, 255, .9);
+    pointer-events: none;
+}
+
+/* ---------------------------------------------------------------- 滚动揭示 */
+.cy-js [data-reveal] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .8s var(--ease), transform .8s var(--ease);
+    will-change: opacity, transform;
+}
+.cy-js [data-reveal].cy-in { opacity: 1; transform: none; }
+.cy-js [data-reveal][data-reveal="wipe"] {
+    clip-path: inset(0 100% 0 0);
+    transform: none;
+    transition: clip-path .9s var(--ease), opacity .5s;
+}
+.cy-js [data-reveal="wipe"].cy-in { clip-path: inset(0 0 0 0); }
+
+/* ---------------------------------------------------------------- 动效细节 */
+.skeleton { background: linear-gradient(90deg, #0C1420 25%, #132032 50%, #0C1420 75%); background-size: 200% 100%; }
+.data-flow::after { background: linear-gradient(90deg, transparent, rgba(53, 224, 255, .3), transparent); }
+.scanning::before { background: linear-gradient(0deg, transparent 0%, rgba(53, 224, 255, .35) 50%, transparent 100%); }
+.scan-line::after { background: linear-gradient(90deg, transparent, rgba(53, 224, 255, .5), transparent); }
+.pulse-dot::after { background-color: var(--gr); box-shadow: 0 0 12px var(--gr); }
+.circle-pulse::before { background-color: rgba(53, 224, 255, .35); }
+
+/* ---------------------------------------------------------------- 模态框 */
+.bg-black.bg-opacity-50, .bg-black.bg-opacity-70 {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    background-color: rgba(2, 4, 8, .78) !important;
+}
+
+/* ---------------------------------------------------------------- 诊断步骤 */
+.diagnosis-step .bg-primary-100 {
+    background-color: rgba(53, 224, 255, .1) !important;
+    border: 1px solid rgba(53, 224, 255, .35);
+    border-radius: 1px !important;
+    box-shadow: inset 0 0 12px -4px rgba(53, 224, 255, .8);
+}
+
+/* ---------------------------------------------------------------- 语义色 */
+.text-error { text-shadow: 0 0 14px rgba(255, 77, 109, .5); }
+.text-warning { text-shadow: 0 0 14px rgba(255, 176, 32, .4); }
+.text-secondary-500 { text-shadow: 0 0 14px rgba(124, 255, 178, .4); }
+
+/* 未纳入主题令牌的默认色系浅底，统一压暗 */
+.bg-blue-50 { background-color: rgba(53, 224, 255, .1) !important; }
+.bg-blue-100 { background-color: rgba(53, 224, 255, .15) !important; }
+.bg-green-50 { background-color: rgba(124, 255, 178, .1) !important; }
+.bg-green-100 { background-color: rgba(124, 255, 178, .15) !important; }
+.bg-purple-50 { background-color: rgba(185, 140, 255, .12) !important; }
+.bg-purple-100 { background-color: rgba(185, 140, 255, .17) !important; }
+.bg-yellow-50 { background-color: rgba(255, 176, 32, .12) !important; }
+.bg-orange-50 { background-color: rgba(255, 154, 61, .12) !important; }
+.bg-red-50 { background-color: rgba(255, 77, 109, .12) !important; }
+.text-green-800 { color: var(--gr) !important; }
+.text-purple-500 { color: #C9A6FF !important; }
+.text-red-500 { color: var(--rd) !important; }
+.to-white { --tw-gradient-to: rgba(10, 16, 24, .94) !important; }
+.from-white { --tw-gradient-from: rgba(10, 16, 24, .94) !important; }
+
+/* 彩色圆底图标：去掉圆形，改为方形切角 + 内描边 */
+.rounded-full.bg-blue-50, .rounded-full.bg-blue-100,
+.rounded-full.bg-green-50, .rounded-full.bg-green-100,
+.rounded-full.bg-purple-50, .rounded-full.bg-purple-100,
+.rounded-full.bg-yellow-50, .rounded-full.bg-orange-50, .rounded-full.bg-red-50 {
+    border-radius: 2px !important;
+    box-shadow: inset 0 0 0 1px rgba(120, 200, 255, .16);
+}
+
+/* ---------------------------------------------------------------- 对话 */
+.chat-chip {
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-size: 12px;
+    font-family: var(--mono);
+    letter-spacing: .04em;
+    border: 1px solid var(--hair);
+    color: var(--tx-m);
+    background: rgba(5, 8, 14, .6);
+    transition: all .25s var(--ease);
+}
+.chat-chip:hover {
+    border-color: rgba(53, 224, 255, .6);
+    color: var(--cy-l);
+    background: rgba(53, 224, 255, .08);
+    box-shadow: 0 0 18px -8px rgba(53, 224, 255, .95);
+}
+.chat-msg { display: flex; align-items: flex-start; gap: 8px; }
+.chat-bubble {
+    max-width: 84%;
+    border-radius: 2px;
+    padding: 10px 14px;
+    font-size: 14px;
+    line-height: 1.75;
+    word-break: break-word;
+}
+.chat-bubble-user {
+    background: linear-gradient(180deg, #11A0C4, #07627E);
+    color: #EAFBFF;
+    box-shadow: inset 0 1px 0 rgba(168, 242, 255, .45);
+}
+.chat-bubble-ai {
+    background: rgba(14, 22, 34, .94);
+    color: var(--tx);
+    border: 1px solid var(--hair);
+    box-shadow: inset 2px 0 0 rgba(53, 224, 255, .55);
+}
+.chat-typing span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    margin-right: 4px;
+    border-radius: 50%;
+    background: var(--cy);
+    box-shadow: 0 0 10px var(--cy);
+    animation: chatBounce 1.2s infinite;
+}
+@keyframes chatBounce { 0%, 60%, 100% { transform: translateY(0); opacity: .35 } 30% { transform: translateY(-4px); opacity: 1 } }
+
+/* 首屏那两个模糊色块与页面气质不符，隐藏 */
+#home .animate-pulse-slow { display: none; }
+
+/* ============================================================================
+   故障美学层（GLITCH）
+   RGB 通道分离 / 撕裂带 / 噪声爆发 / 信号丢失 / 坏点
+   —— 与上面的"干净 HUD"形成对撞，读起来才是故障而不是纯科技
+   ========================================================================== */
+:root {
+    --gl-r: #FF2E63;   /* 通道分离红 */
+    --gl-c: #00E5FF;   /* 通道分离青 */
+}
+
+/* ---------- 光标：自定义准星 ---------- */
+html.cy-cursor, html.cy-cursor * { cursor: none !important; }
+html.cy-cursor input, html.cy-cursor textarea, html.cy-cursor select,
+html.cy-cursor [contenteditable] { cursor: auto !important; }
+
+.cy-cur { position: fixed; left: 0; top: 0; z-index: 9998; pointer-events: none; opacity: 0; transition: opacity .25s; }
+.cy-cur__ring {
+    position: absolute; left: 0; top: 0;
+    width: 32px; height: 32px;
+    margin: -16px 0 0 -16px;
+    border: 1px solid rgba(53, 224, 255, .5);
+    border-radius: 50%;
+    transition: width .2s var(--ease), height .2s var(--ease), margin .2s var(--ease),
+                border-color .2s, border-radius .2s, opacity .25s;
+}
+.cy-cur__ring::before, .cy-cur__ring::after {
+    content: ''; position: absolute; left: 50%; width: 1px; height: 5px;
+    background: rgba(53, 224, 255, .7);
+}
+.cy-cur__ring::before { top: -7px; }
+.cy-cur__ring::after { bottom: -7px; }
+.cy-cur__dot {
+    position: fixed; left: 0; top: 0; z-index: 9999;
+    width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+    background: var(--cy); box-shadow: 0 0 10px var(--cy);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .25s, background .2s, box-shadow .2s;
+}
+.cy-cur__label {
+    position: absolute; left: 26px; top: 10px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: .18em;
+    color: var(--gr); white-space: nowrap;
+    opacity: 0; transition: opacity .18s;
+}
+.cy-cur.is-link .cy-cur__ring {
+    width: 54px; height: 54px; margin: -27px 0 0 -27px;
+    border-color: rgba(124, 255, 178, .85);
+    border-radius: 2px;
+}
+.cy-cur.is-link .cy-cur__label { opacity: .9; }
+.cy-cur.is-link .cy-cur__dot { background: var(--gr); box-shadow: 0 0 12px var(--gr); }
+.cy-cur.is-down .cy-cur__ring { width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+
+/* 点击爆点已移除（花哨）；按下准星缩小已足够作为反馈 */
+
+/* ---------- 卡片聚光（跟随光标） ---------- */
+.card-hover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%),
+                rgba(53, 224, 255, .11), transparent 68%);
+    transition: opacity .25s;
+}
+.card-hover:hover::before { opacity: 1; }
+
+/* ---------- 标题通道分离（悬停与故障脉冲时） ---------- */
+.cy-split { position: relative; }
+.cy-split::before, .cy-split::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 0; top: 0;
+    width: 100%;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .12s, transform .12s;
+}
+.cy-split::before { color: var(--gl-r); transform: translate(-2px, 0); clip-path: inset(0 0 52% 0); }
+.cy-split::after { color: var(--gl-c); transform: translate(2px, 0); clip-path: inset(46% 0 0 0); }
+
+.cy-split:hover::before { opacity: .7; transform: translate(-2px, 0); }
+.cy-split:hover::after { opacity: .7; transform: translate(2px, 0); }
+
+/* 导航 logo 的红色残影 */
+nav .gradient-text { position: relative; }
+nav .gradient-text::after {
+    content: attr(data-text);
+    position: absolute; left: 0; top: 0; width: 100%;
+    background-image: linear-gradient(100deg, var(--gl-r), var(--gl-r));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    transform: translateX(2px);
+    transition: opacity .15s, transform .15s;
+    pointer-events: none;
+}
+nav .gradient-text:hover::after { opacity: .8; transform: translateX(4px); }
+
+/* ---------- 故障脉冲（整页错位 / 卡片红描边）已移除 ---------- */
+
+/* ---------- 撕裂带 / 噪声爆发 / 坏点：已移除 ----------
+   这三层都是全屏覆盖 + 高频显隐，是最典型的"花哨屏幕闪烁"。 */
+
+/* ---------- 左下角系统状态条 ---------- */
+.cy-status {
+    position: fixed;
+    left: 18px; bottom: 18px;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--tx-l);
+    background: rgba(5, 7, 12, .8);
+    border: 1px solid var(--hair);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    transition: color .15s, border-color .15s;
+}
+.cy-status__dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gr);
+    box-shadow: 0 0 10px var(--gr);
+    animation: cy-blink 2.4s ease-in-out infinite;
+}
+@keyframes cy-blink { 0%, 100% { opacity: 1 } 50% { opacity: .25 } }
+.cy-status__t { white-space: nowrap; }
+@media (max-width: 640px) { .cy-status { display: none; } }
+
+/* ============================================================================
+   常驻故障层
+   前面的脉冲是"事件"，每十几秒才闪一次，等于不存在；
+   这一层让故障一直在场：常驻通道分离 + 漂移跟踪误差带 + 光标噪点场 + 拖尾撕裂
+   ========================================================================== */
+
+/* 通道分离只在悬停时出现；常驻会让正文发虚、影响阅读 */
+.cy-split::before, .cy-split::after { opacity: 0; }
+nav .gradient-text::after { opacity: 0; }
+
+/* 跟踪误差带 / 首屏面板常驻色差 / 跑马灯错位 已全部移除：
+   它们横穿或抖动屏幕，属于"挡视线 + 花哨闪烁" */
+
+/* 光标噪点故障场已移除：跟随光标的噪点会压住正文 */
+
+/* 光标拖尾撕裂条已移除（花哨） */
+
+/* 准星自身错位已移除 */
+
+/* 触屏设备不启用自定义准星 */
+@media (hover: none), (pointer: coarse) {
+    html.cy-cursor, html.cy-cursor * { cursor: auto !important; }
+    .cy-cur, .cy-cur__dot, .cy-status { display: none !important; }
+}

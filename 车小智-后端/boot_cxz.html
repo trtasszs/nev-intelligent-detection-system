@@ -1,0 +1,631 @@
+<!-- ============================================================
+     车小智 · 开机序列（莱茵生命风）
+     ============================================================
+     骨架照参考件（dsh-startup-screen 的 preview）：
+       白铭牌三行品牌块 / REV 行 + 橙钟 / 短横线指示
+       中央细体宽字距主字 + 两侧细线的等宽副标题
+       方框按钮（中文 + 等宽英文）+ 提示行
+       左下 [ nn / 06 ] TAG、中下状态两行、右下 POWERED BY + 黑条
+       底部细进度线、右侧极淡竖面板 ID 行、中央极淡准星
+     动效照参考件的 @keyframes 词汇表补齐（原来只做了自转）：
+       sweep 横扫 · streak 光条 · scan 扫描线 · bloom 泛光
+       gx/gy clip-path 故障切片 · pulse 按钮脉冲 · voice 声波条
+     另加一层很克制的浮尘粒子（参考件没有 canvas，这层是额外细节）
+     ============================================================ -->
+<div id="cxz-boot" aria-hidden="true">
+  <div class="cxb-glow"></div>
+  <div class="cxb-vignette"></div>
+  <div class="cxb-wash"></div>
+  <canvas class="cxb-dust"></canvas>
+
+  <!-- 第 1 幕：黑幕厂牌（扫光在这一层里掠过标识） -->
+  <div class="cxb-black" data-act="black">
+    <div class="cxb-blackmark">
+      <!-- ★原来的 path 是手写的、根本没成形（只渲染出一个小点）。换成与终幕同一套车标。 -->
+      <svg class="cxb-whale" viewBox="0 0 64 40" aria-hidden="true">
+        <path d="M8 30h48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="square"/>
+        <path d="M13 30c0-8 6-14 14-14h10c8 0 14 6 14 14" fill="none" stroke="currentColor" stroke-width="2.6"/>
+        <circle cx="22" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.6"/>
+        <circle cx="42" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.6"/>
+        <path d="M32 3v7M22 6l3 6M42 6l-3 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/>
+      </svg>
+      <div class="cxb-blacktitle">车小智</div>
+      <div class="cxb-blacken">CHE XIAO ZHI</div>
+      <div class="cxb-blacksub">NEV DIAGNOSTIC OS</div>
+    </div>
+    <div class="cxb-sweep"></div>
+  </div>
+
+  <!-- 硬切白闪：黑幕 -> 底板那一下的全白闪（参考件的 .dsu-flash） -->
+  <div class="cxb-flash" data-cxb-flash></div>
+
+  <!-- 暖白底板 -->
+  <div class="cxb-paper" data-act="paper">
+    <div class="cxb-side"></div>
+    <div class="cxb-idline">· ID CONFIRMED : <b data-cxb-id>0087</b></div>
+
+    <!-- 中央极淡环形准星 -->
+    <div class="cxb-reticle">
+      <svg viewBox="0 0 420 420" aria-hidden="true">
+        <circle cx="210" cy="210" r="196" fill="none" stroke="currentColor" stroke-width="1" opacity=".18"/>
+        <circle cx="210" cy="210" r="150" fill="none" stroke="currentColor" stroke-width="1" opacity=".12"/>
+        <g class="cxb-ticks"></g>
+        <circle cx="210" cy="210" r="2" fill="currentColor" opacity=".3"/>
+      </svg>
+    </div>
+
+    <!-- 竖向扫描线（底板出现后扫一遍，不循环） -->
+    <div class="cxb-scan"></div>
+
+    <!-- 左上铭牌 -->
+    <div class="cxb-plate">
+      <div class="cxb-brand-1">车小智</div>
+      <div class="cxb-brand-2">CHE XIAO ZHI</div>
+      <div class="cxb-brand-3">NEV DIAGNOSTIC OS</div>
+    </div>
+    <div class="cxb-revline">
+      <span>REV 1.0.0 · DESKTOP PROFILE</span>
+      <b data-cxb-clock>--:--:--</b>
+    </div>
+    <div class="cxb-dashes">
+      <i data-cxb-dash></i><i data-cxb-dash></i><i data-cxb-dash></i>
+      <i data-cxb-dash></i><i data-cxb-dash></i><i data-cxb-dash></i>
+    </div>
+
+    <!-- 中央台词（故障切片用两层同名文本叠加做出色散） -->
+    <div class="cxb-center">
+      <div class="cxb-zhwrap">
+        <div class="cxb-zh" data-cxb-zh>需要访问许可</div>
+        <div class="cxb-zh cxb-gh gx" data-cxb-zhgx aria-hidden="true">需要访问许可</div>
+        <div class="cxb-zh cxb-gh gy" data-cxb-zhgy aria-hidden="true">需要访问许可</div>
+      </div>
+      <div class="cxb-rule">
+        <i></i><span data-cxb-en></span>
+        <i class="cxb-caret" data-cxb-caret></i><i></i>
+      </div>
+      <div class="cxb-action">
+        <button class="cxb-btn" data-cxb-continue type="button">
+          <span class="cxb-btn-zh">授予访问权限</span>
+          <span class="cxb-btn-en" data-cxb-btnen>GRANT ACCESS</span>
+        </button>
+        <div class="cxb-hint" data-cxb-hint>按 Enter / Space，或点击按钮继续</div>
+      </div>
+    <!-- 中央标识装配区（序列中间把标识装到中央，参考件 .dsu-logo） -->
+      <div class="cxb-logo" data-cxb-logo>
+        <svg viewBox="0 0 64 40" aria-hidden="true">
+          <path class="cxb-pc cxb-pc1" d="M8 30h48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/>
+          <path class="cxb-pc cxb-pc2" d="M13 30c0-8 6-14 14-14h10c8 0 14 6 14 14" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <circle class="cxb-pc cxb-pc3" cx="22" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <circle class="cxb-pc cxb-pc4" cx="42" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <path class="cxb-pc cxb-pc5" d="M32 3v7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+          <path class="cxb-pc cxb-pc6" d="M22 6l3 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+          <path class="cxb-pc cxb-pc7" d="M42 6l-3 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+        </svg>
+        <span class="cxb-logolabel">CHE XIAO ZHI</span>
+      </div>
+    </div>
+
+<!-- ==== CXZ-FX2 BEGIN ==== -->
+    <div class="cxb-watermark" data-cxb-wm></div>
+    <!-- ==== CXZ-FX2 END ==== -->
+    <!-- 底部三栏 -->
+    <div class="cxb-foot">
+      <div class="cxb-foot-l"><span data-cxb-no>[ 00 / 06 ]</span> <b data-cxb-tag>BOOT</b></div>
+      <div class="cxb-foot-c">
+        <div class="cxb-voice" data-cxb-voice><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="cxb-status-zh" data-cxb-status>系统自检中…</div>
+        <div class="cxb-status-en" data-cxb-statusen>SYSTEM SELF-CHECK</div>
+      </div>
+      <div class="cxb-foot-r">POWERED BY 车小智 <i></i></div>
+    </div>
+
+    <div class="cxb-progress"><i data-cxb-bar></i></div>
+    <div class="cxb-grain"></div>
+  </div>
+
+  <!-- 揭幕（bloom + 冲击波 + clip-path 色散 + 变形宽银幕光条） -->
+  <div class="cxb-streak" data-cxb-streak></div>
+  <div class="cxb-shock" data-cxb-shock></div>
+  <div class="cxb-bloom" data-cxb-bloom></div>
+
+  <!-- 终幕：WELCOME 版式（参考件 .dsu-welcome / w1..w4） -->
+  <div class="cxb-welcome" data-cxb-welcome>
+    <div class="cxb-w1">车小智</div>
+    <div class="cxb-w2">NEV DIAGNOSTIC OS</div>
+    <div class="cxb-w3">
+      <svg viewBox="0 0 64 40" aria-hidden="true">
+        <path d="M8 30h48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/>
+        <path d="M13 30c0-8 6-14 14-14h10c8 0 14 6 14 14" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <circle cx="22" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <circle cx="42" cy="30" r="4" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        <path d="M32 3v7M22 6l3 6M42 6l-3 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"/>
+      </svg>
+      <span>CHE XIAO ZHI · DESKTOP</span>
+    </div>
+    <div class="cxb-w4">核验通过 · 欢迎使用</div>
+  </div>
+</div>
+
+<style>
+/* ============ 车小智开机序列 · 莱茵生命风 ============ */
+#cxz-boot{
+  --cxb-bg:#e5e3df;
+  --cxb-bg2:#eceae6;
+  --cxb-ink:#0a0a0a;
+  --cxb-ink-soft:#3a3936;
+  --cxb-accent:#ff7500;
+  --cxb-dim:#8f8e8a;
+  --cxb-rule:rgba(10,10,10,.22);
+  position:fixed !important; inset:0 !important; z-index:2147483000 !important;
+  margin:0 !important; padding:0 !important; overflow:hidden !important;
+  background:var(--cxb-ink) !important;
+  font-family:"Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  transition:opacity .5s ease;
+}
+/* ★车小智页面用 html.cy-cursor 全局把原生光标藏了（cursor:none !important），
+   自定义准星又画在开机层下面 ⇒ 播动画时鼠标看不见。用 id 级特异性还回来。 */
+html.cy-cursor #cxz-boot,
+html.cy-cursor #cxz-boot *{ cursor:auto !important }
+html.cy-cursor #cxz-boot .cxb-continue,
+html.cy-cursor #cxz-boot .cxb-btn{ cursor:pointer !important }
+
+#cxz-boot.cxb-paperon{ background:var(--cxb-bg) !important }
+#cxz-boot.cxb-out{ opacity:0; pointer-events:none }
+#cxz-boot .cxb-faint{ opacity:.42 }
+#cxz-boot .cxb-wash{ position:absolute; inset:0; background:#8b8a88; opacity:0; pointer-events:none; z-index:9 }
+
+/* ---------- 暖白底板 ----------
+   ★★绝对不要给这一层加 opacity 淡入：父层 opacity 会把整层子内容一起压成半透明，
+     实测「黑字」被渲染成 RGB≈142 的灰字（正确应为 10）。
+   ★★z-index 也不能省：底板光晕 .cxb-plate 是 z-index:1 的定位元素，
+     若本层没有 z-index，静态内容会被那层渐变整片盖住（实测台词/按钮/底栏全消失）。 */
+#cxz-boot .cxb-paper{
+  position:absolute; inset:0; color:var(--cxb-ink) !important; z-index:4;
+}
+
+/* ---------- 底板光晕 + 暗角 ----------
+   参考件靠这两层让"大色块不塑料"：
+     plate    右上角一团白光 + 168° 微渐变
+     vignette 四周压暗 + 中央一点柔光（给纵深）
+   ★★这一层千万别叫 .cxb-plate —— 左上那个白色品牌铭牌已经叫这个名字，
+     类名一撞，inset:0 的渐变会套到铭牌上，变成铺满全屏的白雾把中央内容全糊住（踩过）。 */
+#cxz-boot .cxb-glow{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(120% 90% at 78% 12%, rgba(255,255,255,.85) 0%, rgba(255,255,255,0) 55%),
+    linear-gradient(168deg, var(--cxb-bg2) 0%, var(--cxb-bg) 42%, var(--cxb-bg) 100%);
+}
+#cxz-boot .cxb-vignette{
+  position:absolute; inset:0; z-index:13; pointer-events:none;
+  background:
+    radial-gradient(122% 104% at 50% 42%, rgba(0,0,0,0) 52%, rgba(0,0,0,.055) 100%),
+    radial-gradient(60% 40% at 50% 45%, rgba(255,255,255,.28) 0%, rgba(255,255,255,0) 100%);
+}
+/* 黑幕期间这两层不该露出来 */
+#cxz-boot:not(.cxb-paperon) .cxb-glow,
+#cxz-boot:not(.cxb-paperon) .cxb-vignette{ opacity:0 }
+#cxz-boot .cxb-glow,
+#cxz-boot .cxb-vignette{ transition:opacity .6s ease }
+
+/* ---------- 浮尘粒子（额外细节，参考件没有；很克制） ---------- */
+#cxz-boot .cxb-dust{
+  position:absolute; inset:0; width:100%; height:100%; pointer-events:none;
+  z-index:3; opacity:.78; mix-blend-mode:multiply;
+}
+
+/* ---------- 第 1 幕 黑幕 ---------- */
+/* 黑幕出场：内部厂牌猛推放大 + 失焦，整层则要"快过白闪"。
+   ★★关键时序：白闪（320ms）是**用来盖住这一刀的** —— 黑幕必须在白闪灭之前就没了，
+     否则黑幕上的大车标会以半透明幽灵的形式压在暖白底板上（实测踩到）。
+     所以整层淡出走 .18s，比白闪的 .32s 短。 */
+#cxz-boot .cxb-black{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background:#000; color:#efece6; z-index:40;
+  transition:opacity .18s linear, visibility .18s linear;
+}
+#cxz-boot .cxb-black.cxb-hide{ opacity:0 !important; visibility:hidden !important }
+#cxz-boot .cxb-black.cxb-hide .cxb-blackmark{
+  transform:scale(1.34) translateY(-20px); filter:blur(7px); opacity:0;
+  transition:transform .5s cubic-bezier(.3,.7,.3,1), filter .5s ease, opacity .5s ease;
+}
+#cxz-boot .cxb-blackmark{ text-align:center; opacity:0; transform:scale(1.5);
+  animation:cxb-tighten 1.15s cubic-bezier(.16,.8,.24,1) .1s forwards }
+/* 标识从大收束到定尺寸 —— 尺度对比就是"镇住"的感觉来源 */
+@keyframes cxb-tighten{ to{ opacity:1; transform:scale(1) } }
+#cxz-boot .cxb-whale{ width:132px; height:auto; display:block; margin:0 auto 20px; color:#fff; overflow:visible }
+#cxz-boot .cxb-blacktitle{ font-size:33px; font-weight:700; letter-spacing:.34em; text-indent:.34em }
+#cxz-boot .cxb-blacken{
+  margin-top:9px; font-family:"Bahnschrift","DIN Alternate","Arial Narrow",ui-monospace,monospace;
+  font-size:27px; font-weight:700; letter-spacing:.62em; text-indent:.62em;
+  transition:letter-spacing 700ms cubic-bezier(.2,.8,.3,1), text-indent 700ms cubic-bezier(.2,.8,.3,1);
+}
+/* 字距收紧：.62em -> .2em（参考件的 dsu-tighten） */
+#cxz-boot .cxb-black.cxb-tight .cxb-blacken{ letter-spacing:.2em; text-indent:.2em }
+#cxz-boot .cxb-blacksub{
+  margin-top:12px; font-family:ui-monospace,Consolas,monospace; font-size:10px;
+  letter-spacing:.42em; text-indent:.42em; color:rgba(255,255,255,.5);
+}
+
+/* 扫光：黑幕里一条极淡的白色斜条掠过标识（参考件的 .dsu-sweep 就在黑幕层内） */
+#cxz-boot .cxb-sweep{
+  position:absolute; top:0; bottom:0; width:42%; left:-50%; pointer-events:none;
+  background:linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.10) 42%,
+                             rgba(255,255,255,.16) 52%, rgba(255,255,255,0) 100%);
+  opacity:0;
+}
+#cxz-boot.cxb-sweeping .cxb-sweep{ animation:cxb-sweep 1150ms cubic-bezier(.32,0,.2,1) forwards }
+@keyframes cxb-sweep{ from{ left:-50%; opacity:1 } to{ left:118%; opacity:1 } }
+
+/* 扫描线：底板出现后自上而下扫一次 */
+#cxz-boot .cxb-scan{
+  position:absolute; left:0; right:0; height:2px; top:-14%; pointer-events:none; z-index:7;
+  background:linear-gradient(90deg, rgba(255,117,0,0), rgba(255,117,0,.5), rgba(255,117,0,0));
+  opacity:0;
+}
+#cxz-boot.cxb-scanning .cxb-scan{ animation:cxb-scan 1.5s cubic-bezier(.35,.1,.3,1) forwards }
+@keyframes cxb-scan{ 0%{ top:-14%; opacity:0 } 10%{ opacity:1 } 86%{ opacity:1 } 100%{ top:102%; opacity:0 } }
+
+/* 右侧竖面板 + ID 行 */
+#cxz-boot .cxb-side{
+  position:absolute; right:9%; top:0; bottom:0; width:24%;
+  background:linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.72) 22%, rgba(255,255,255,.72) 78%, rgba(255,255,255,0));
+  opacity:0; transition:opacity .7s ease; pointer-events:none;
+}
+#cxz-boot.cxb-paperon .cxb-side{ opacity:1 }
+#cxz-boot .cxb-idline{
+  position:absolute; right:11%; top:50%; transform:translateY(-50%);
+  font-family:ui-monospace,Consolas,monospace; font-size:12px; letter-spacing:.16em;
+  color:var(--cxb-ink-soft); opacity:0; transition:opacity .6s ease;
+}
+#cxz-boot.cxb-idon .cxb-idline{ opacity:1 }
+
+/* 准星（参考件里有，但淡到几乎看不见） */
+#cxz-boot .cxb-reticle{
+  position:absolute; left:50%; top:47%; width:min(40vh,360px); aspect-ratio:1;
+  transform:translate(-50%,-50%); color:var(--cxb-ink);
+  opacity:0; transition:opacity .8s ease; pointer-events:none;
+}
+#cxz-boot.cxb-paperon .cxb-reticle{ opacity:.22 }
+#cxz-boot .cxb-reticle svg{ width:100%; height:100%; display:block }
+/* 双环反向自转 —— 参考件是 9s / 5.4s（肉眼能看出在转）。
+   我原来写 60s / 90s 太慢，等于静止，白做了一个动效。 */
+#cxz-boot .cxb-ticks{ transform-origin:210px 210px; animation:cxb-spin 9s linear infinite }
+#cxz-boot .cxb-reticle svg>circle:nth-of-type(1){
+  transform-origin:210px 210px; animation:cxb-spin 5.4s linear infinite reverse;
+}
+@keyframes cxb-spin{ to{ transform:rotate(360deg) } }
+
+/* 左上铭牌 —— 字号按参考件量出来的比例（首行字高约 54px）配 */
+#cxz-boot .cxb-plate{
+  position:absolute; left:46px; top:44px; background:#fff; padding:15px 22px 17px 20px;
+}
+/* 品牌三行：参考件是「从左侧 -22px 滑到位」，按 60ms 一档错开，不是简单淡入 */
+#cxz-boot .cxb-brand-1,
+#cxz-boot .cxb-brand-2,
+#cxz-boot .cxb-brand-3{ opacity:0; transform:translateX(-22px);
+  transition:opacity 560ms cubic-bezier(.16,.84,.24,1), transform 560ms cubic-bezier(.16,.84,.24,1) }
+#cxz-boot.cxb-paperon .cxb-brand-1{ opacity:1; transform:none; transition-delay:.30s }
+#cxz-boot.cxb-paperon .cxb-brand-2{ opacity:1; transform:none; transition-delay:.36s }
+#cxz-boot.cxb-paperon .cxb-brand-3{ opacity:1; transform:none; transition-delay:.42s }
+#cxz-boot .cxb-brand-1{ font-size:40px; font-weight:800; letter-spacing:.01em; line-height:1.04 }
+#cxz-boot .cxb-brand-2{ font-size:21px; font-weight:700; letter-spacing:.02em; line-height:1.16; margin-top:3px }
+#cxz-boot .cxb-brand-3{ font-size:21px; font-weight:700; letter-spacing:.02em; line-height:1.16 }
+/* REV 行 / 短横线 / 步骤计数：左→右滑入（参考件 .dsu-stepcount 是 -18px + 400ms 延迟） */
+#cxz-boot .cxb-revline{
+  position:absolute; left:46px; top:calc(44px + 124px);
+  font-family:ui-monospace,Consolas,monospace; font-size:11px; letter-spacing:.16em;
+  color:var(--cxb-ink-soft); display:flex; gap:14px; align-items:baseline;
+  opacity:0; transform:translateX(-18px);
+  transition:opacity 560ms ease, transform 560ms cubic-bezier(.16,.84,.24,1);
+}
+#cxz-boot .cxb-revline b{ color:var(--cxb-accent); font-weight:400 }
+#cxz-boot .cxb-dashes{
+  position:absolute; left:46px; top:calc(44px + 152px); display:flex; gap:9px;
+  opacity:0; transform:translateX(-18px);
+  transition:opacity 560ms ease, transform 560ms cubic-bezier(.16,.84,.24,1);
+}
+#cxz-boot.cxb-paperon .cxb-revline{ opacity:1; transform:none; transition-delay:.40s }
+#cxz-boot.cxb-paperon .cxb-dashes{ opacity:1; transform:none; transition-delay:.46s }
+#cxz-boot .cxb-dashes i{ display:block; width:26px; height:2px; background:rgba(10,10,10,.16); transition:background .3s }
+#cxz-boot .cxb-dashes i.cxb-on{ background:var(--cxb-accent) }
+#cxz-boot .cxb-dashes i.cxb-done{ background:rgba(10,10,10,.45) }
+
+/* 中央台词 */
+#cxz-boot .cxb-center{
+  position:absolute; left:50%; top:47%; transform:translate(-50%,-50%);
+  width:min(760px,66vw); text-align:center;
+}
+/* 主字：按参考件实测反推 —— 「需要访问许可」6 字跨 326px，÷6÷1.3 ≈ 42px */
+#cxz-boot .cxb-zh{
+  font-size:clamp(26px,2.65vw,42px); font-weight:300; letter-spacing:.3em; text-indent:.3em;
+  color:var(--cxb-ink);
+}
+/* 故障切片：两层同字叠加，用 clip-path 切横条 + 色散偏移
+   （参考件的 dsu-gx / dsu-gy：430ms · steps(3,end) · 跑 2 次 · 偏移仅 ±3px，很克制；
+     我上一版用 520ms 单次 + ±7px，位移太大反而像错位而不是色散） */
+#cxz-boot .cxb-zh.cxb-gh{ position:absolute; inset:0; pointer-events:none; opacity:0 }
+#cxz-boot .cxb-zh.cxb-gh.gx{ color:#ff3b30 }
+#cxz-boot .cxb-zh.cxb-gh.gy{ color:#2971b8 }
+#cxz-boot.cxb-glitch .cxb-zh.cxb-gh.gx{ animation:cxb-gx 430ms steps(3,end) 2 both }
+#cxz-boot.cxb-glitch .cxb-zh.cxb-gh.gy{ animation:cxb-gy 430ms steps(3,end) 2 both }
+@keyframes cxb-gx{
+  0%{ transform:translate(0,0); opacity:0; clip-path:inset(0 0 100% 0) }
+  14%{ transform:translate(-3px,0); opacity:.7; clip-path:inset(6% 0 68% 0) }
+  34%{ transform:translate(2px,0); opacity:.5; clip-path:inset(54% 0 22% 0) }
+  56%{ transform:translate(-2px,0); opacity:.65; clip-path:inset(18% 0 58% 0) }
+  80%{ transform:translate(2px,0); opacity:.4; clip-path:inset(70% 0 8% 0) }
+  100%{ transform:translate(0,0); opacity:0; clip-path:inset(0 0 100% 0) }
+}
+@keyframes cxb-gy{
+  0%{ transform:translate(0,0); opacity:0; clip-path:inset(0 0 100% 0) }
+  14%{ transform:translate(3px,0); opacity:.7; clip-path:inset(62% 0 14% 0) }
+  34%{ transform:translate(-2px,0); opacity:.5; clip-path:inset(10% 0 66% 0) }
+  56%{ transform:translate(2px,0); opacity:.65; clip-path:inset(44% 0 34% 0) }
+  80%{ transform:translate(-2px,0); opacity:.4; clip-path:inset(26% 0 52% 0) }
+  100%{ transform:translate(0,0); opacity:0; clip-path:inset(0 0 100% 0) }
+}
+
+#cxz-boot .cxb-rule{ display:flex; align-items:center; gap:18px; margin-top:14px }
+#cxz-boot .cxb-rule i{ flex:1; height:1px; background:var(--cxb-rule);
+  transform-origin:left; animation:cxb-rulein .6s ease .2s backwards }
+#cxz-boot .cxb-rule i:last-child{ transform-origin:right }
+@keyframes cxb-rulein{ from{ transform:scaleX(0) } to{ transform:scaleX(1) } }
+#cxz-boot .cxb-rule span{
+  font-family:ui-monospace,Consolas,monospace; font-size:12px; letter-spacing:.3em;
+  color:var(--cxb-ink-soft); white-space:nowrap;
+}
+@keyframes cxb-blink{ 50%{ opacity:0 } }
+
+/* 按钮 + 脉冲 */
+#cxz-boot .cxb-action{ margin-top:64px; min-height:96px }
+#cxz-boot .cxb-btn{
+  display:none; align-items:center; gap:11px; margin:0 auto; padding:10px 19px;
+  background:transparent; border:1px solid var(--cxb-ink); color:var(--cxb-ink);
+  font-family:ui-monospace,Consolas,monospace; font-size:13px; letter-spacing:.13em;
+  transition:background .18s, color .18s, border-color .18s;
+}
+#cxz-boot .cxb-btn .cxb-btn-zh{ font-family:inherit; font-size:13px; letter-spacing:.16em; font-weight:600 }
+#cxz-boot .cxb-btn .cxb-btn-en{ color:var(--cxb-dim); font-size:11px; letter-spacing:.2em }
+#cxz-boot .cxb-btn:hover{ background:var(--cxb-ink); color:#fff }
+#cxz-boot .cxb-btn:hover .cxb-btn-en{ color:rgba(255,255,255,.7) }
+/* ★基态即最终态，用 keyframes 的 from 做入场 ——
+   写成基态 opacity:0 + forwards，末态会停在半透明（按钮灰蒙蒙）。 */
+#cxz-boot.cxb-ask .cxb-btn{ display:inline-flex; animation:cxb-fadein .4s ease, cxb-pulse 2.1s ease-in-out .6s infinite }
+@keyframes cxb-pulse{
+  0%{ box-shadow:0 0 0 0 rgba(255,117,0,0) }
+  45%{ box-shadow:0 0 0 4px rgba(255,117,0,.16) }
+  100%{ box-shadow:0 0 0 0 rgba(255,117,0,0) }
+}
+#cxz-boot .cxb-hint{
+  display:none; margin-top:16px; font-family:ui-monospace,Consolas,monospace;
+  font-size:11px; letter-spacing:.18em; color:#6b6a66;
+}
+#cxz-boot.cxb-ask .cxb-hint{ display:block; animation:cxb-fadein .4s ease .1s backwards }
+@keyframes cxb-fadein{ from{ opacity:0; transform:translateY(6px) } to{ opacity:1; transform:none } }
+
+/* 声波条 */
+#cxz-boot .cxb-voice{ display:flex; gap:3px; justify-content:center; align-items:flex-end;
+  height:12px; margin-bottom:8px; opacity:0; transition:opacity .3s }
+#cxz-boot.cxb-talking .cxb-voice{ opacity:1 }
+#cxz-boot .cxb-voice i{ display:block; width:2px; height:3px; background:var(--cxb-accent); opacity:.75;
+  animation:cxb-voice 1s ease-in-out infinite }
+#cxz-boot .cxb-voice i:nth-child(2){ animation-delay:.12s }
+#cxz-boot .cxb-voice i:nth-child(3){ animation-delay:.24s }
+#cxz-boot .cxb-voice i:nth-child(4){ animation-delay:.36s }
+#cxz-boot .cxb-voice i:nth-child(5){ animation-delay:.48s }
+@keyframes cxb-voice{ 0%,100%{ height:3px } 50%{ height:12px } }
+
+/* 底部三栏 */
+#cxz-boot .cxb-foot{
+  position:absolute; left:2.6%; right:2.6%; bottom:34px;
+  display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
+  opacity:0; animation:cxb-fadein .6s ease .62s forwards;
+}
+#cxz-boot .cxb-foot-l,#cxz-boot .cxb-foot-r{
+  font-family:ui-monospace,Consolas,monospace; font-size:11px; letter-spacing:.2em;
+  color:var(--cxb-dim); display:flex; align-items:center; gap:8px; white-space:nowrap;
+}
+#cxz-boot .cxb-foot-l b{ color:var(--cxb-ink-soft); font-weight:400 }
+#cxz-boot .cxb-foot-c{ text-align:center; flex:1 }
+#cxz-boot .cxb-status-zh{ font-size:14px; letter-spacing:.24em; text-indent:.24em; color:var(--cxb-ink-soft) }
+#cxz-boot .cxb-status-en{ font-family:ui-monospace,Consolas,monospace; font-size:10px;
+  letter-spacing:.28em; text-indent:.28em; color:var(--cxb-dim); margin-top:6px }
+#cxz-boot .cxb-foot-r i{ display:inline-block; width:26px; height:9px; background:var(--cxb-ink) }
+#cxz-boot .cxb-progress{ position:absolute; left:2.6%; right:2.6%; bottom:22px; height:2px;
+  background:rgba(10,10,10,.1) }
+#cxz-boot .cxb-progress i{ display:block; height:100%; width:0; background:var(--cxb-ink);
+  transition:width .5s cubic-bezier(.4,0,.2,1) }
+
+/* 胶片颗粒（参考件 dsu-grain）
+   ★两个校准点：① 强度参考件是 opacity .05、峰值 .11 —— 我上一版写 .34，重了近 7 倍，
+     预览帧体积因此虚高；② 别用 radial-gradient 做点阵（那是印刷网点，不是颗粒），
+     用内联 SVG feTurbulence 真噪声。 */
+#cxz-boot .cxb-grain{
+  position:absolute; inset:-50%; pointer-events:none; opacity:.05; mix-blend-mode:multiply;
+  transition:opacity .3s ease; background-repeat:repeat;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+}
+/* 峰值时刻：噪点上浮一点，故障感更足（参考件的 .dsu-peak） */
+#cxz-boot.cxb-peak .cxb-grain{ opacity:.11 }
+
+/* 硬切白闪：黑幕切底板那一下的一帧全白（参考件 .dsu-flash）。
+   这一下是整段最出冲击力的地方 —— 没有它，黑幕到暖白就是"淡出淡入"，软绵绵。 */
+#cxz-boot .cxb-flash{
+  position:absolute; inset:0; background:#fff; opacity:0; z-index:60; pointer-events:none;
+}
+#cxz-boot.cxb-flashing .cxb-flash{ animation:cxb-flash 320ms cubic-bezier(.1,.9,.2,1) forwards }
+@keyframes cxb-flash{
+  0%{ opacity:0 } 8%{ opacity:1 } 30%{ opacity:1 } 100%{ opacity:0 }
+}
+
+/* 揭幕冲击波：从中心炸开的一圈硬边光环 */
+#cxz-boot .cxb-shock{
+  position:absolute; left:50%; top:45%; width:20px; height:20px; margin:-10px 0 0 -10px;
+  border-radius:50%; border:2px solid rgba(41,113,184,.55); z-index:62;
+  opacity:0; pointer-events:none; transform:scale(.1);
+}
+#cxz-boot.cxb-reveal .cxb-shock{ animation:cxb-shock 900ms cubic-bezier(.12,.75,.2,1) forwards }
+@keyframes cxb-shock{
+  0%{ opacity:0; transform:scale(.1); border-width:10px }
+  18%{ opacity:.95; transform:scale(.42); border-width:4px }
+  60%{ opacity:.42; transform:scale(1); border-width:2px }
+  100%{ opacity:0; transform:scale(1.5); border-width:1px }
+}
+
+/* 揭幕再过一次曝：整屏泛白一下（比只靠光条更"炸"） */
+#cxz-boot.cxb-reveal .cxb-flash{ animation:cxb-revealflash 520ms cubic-bezier(.1,.85,.2,1) forwards }
+@keyframes cxb-revealflash{
+  0%{ opacity:0 } 10%{ opacity:.92 } 34%{ opacity:.28 } 100%{ opacity:0 }
+}
+
+/* 底板"落定"：落下来的那一下从 1.035 收到 1 */
+#cxz-boot.cxb-paperon .cxb-paper{ animation:cxb-settle 900ms cubic-bezier(.16,.84,.24,1) 1 both }
+@keyframes cxb-settle{ from{ transform:scale(1.035) } to{ transform:scale(1) } }
+
+/* 揭幕时的机位抖动：整层短促抖动（一次性，不循环）。
+   ★选择器要比"落定"那条更具体（多带一个 cxb-paperon），否则同为 (1,2,0) 时
+     后面的 settle 会覆盖掉它 —— 两条都在改 .cxb-paper 的 animation，只能有一条生效。 */
+#cxz-boot.cxb-reveal.cxb-paperon .cxb-paper{ animation:cxb-camshake 420ms steps(1,end) 1 }
+@keyframes cxb-camshake{
+  0%{ transform:translate(0,0) } 12%{ transform:translate(-7px,3px) }
+  26%{ transform:translate(6px,-4px) } 40%{ transform:translate(-5px,-2px) }
+  56%{ transform:translate(4px,4px) } 72%{ transform:translate(-3px,1px) }
+  86%{ transform:translate(2px,-1px) } 100%{ transform:translate(0,0) }
+}
+#cxz-boot.cxb-handoff{
+  transform:scale(1.035); filter:blur(5px); opacity:0;
+  transition:opacity 780ms cubic-bezier(.4,0,.2,1), transform 780ms cubic-bezier(.4,0,.2,1), filter 780ms cubic-bezier(.4,0,.2,1);
+}
+
+/* 逐字渐显（参考件 typeIn 的 .dsu-ch）
+   ★★这是"抖动"的根治点：用不透明度 + 微量上移逐字出现，
+     而不是把字符串逐字截断 —— 截断会让居中排版的字宽不断变化，整行左右抖。 */
+#cxz-boot .cxb-ch{ display:inline-block; opacity:0; transform:translateY(.16em);
+  transition:opacity .34s ease, transform .34s ease }
+#cxz-boot .cxb-ch.cxb-chon{ opacity:1; transform:none }
+#cxz-boot .cxb-rule span .cxb-ch{ transform:translateY(.1em); transition-duration:.3s }
+
+/* 揭幕：bloom 泛光 + 方框 */
+#cxz-boot .cxb-bloom{
+  position:absolute; left:50%; top:47%; width:10px; height:10px; border-radius:50%;
+  transform:translate(-50%,-50%); pointer-events:none; z-index:10; opacity:0;
+  background:radial-gradient(circle, rgba(255,117,0,.5) 0%, rgba(255,117,0,.16) 42%, rgba(255,117,0,0) 70%);
+}
+#cxz-boot.cxb-reveal .cxb-bloom{ animation:cxb-bloom 1.5s cubic-bezier(.16,.7,.3,1) forwards }
+@keyframes cxb-bloom{
+  0%{ opacity:0; width:10px; height:10px }
+  22%{ opacity:1; width:58vmax; height:58vmax }
+  100%{ opacity:0; width:64vmax; height:64vmax }
+}
+/* 中央标识装配区（参考件 .dsu-logo：高度 0 -> 118px，撑开时标识"装"到中央） */
+#cxz-boot .cxb-logo{
+  margin-top:26px; height:0; opacity:0; display:flex; flex-direction:column; align-items:center;
+  transition:opacity 420ms ease, height 420ms ease, margin-top 420ms ease;
+}
+#cxz-boot.cxb-logoon .cxb-logo{ opacity:1; height:118px }
+#cxz-boot .cxb-logo svg{ width:84px; height:84px; color:var(--cxb-ink); display:block }
+#cxz-boot .cxb-logolabel{
+  margin-top:10px; font-family:ui-monospace,Consolas,monospace; font-size:10px;
+  letter-spacing:.58em; text-indent:.58em; color:var(--cxb-ink-soft);
+}
+/* 揭幕时序：中央区必须**先退**、终幕**后进**（参考件 .dsu-center.dsu-off 是独立的类）。
+   ★别把两者绑在同一时刻 —— 绑一起会看到两套版式重叠（实测帧里「核验通过·欢迎使用」
+   的幽灵和第二个车标压在 WELCOME 上面）。这里把它挂在 cxb-glitch 上，比 cxb-reveal 早 300ms。 */
+#cxz-boot.cxb-glitch .cxb-center{ opacity:0; transition:opacity 300ms ease }
+
+/* 变形宽银幕光条：光晕最亮那一刻横扫而过（参考件 .dsu-streak） */
+#cxz-boot .cxb-streak{
+  position:absolute; left:50%; top:45%; height:3px; width:0; z-index:63; opacity:0;
+  pointer-events:none; transform:translate(-50%,-50%); filter:blur(1px);
+  background:linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 34%,
+                             rgba(255,255,255,.98) 50%, rgba(255,255,255,.5) 66%, rgba(255,255,255,0) 100%);
+}
+#cxz-boot.cxb-reveal .cxb-streak{ animation:cxb-streak 1000ms cubic-bezier(.2,.78,.2,1) forwards }
+@keyframes cxb-streak{
+  0%{ opacity:0; width:0; height:1px }
+  26%{ opacity:1; width:62vw; height:3px }
+  60%{ opacity:.6; width:96vw; height:2px }
+  100%{ opacity:0; width:132vw; height:1px }
+}
+
+/* 终幕 WELCOME 版式（参考件 .dsu-welcome / w1..w4） */
+#cxz-boot .cxb-welcome{
+  position:absolute; left:0; right:0; top:45%; transform:translateY(-50%); z-index:30;
+  display:flex; flex-direction:column; align-items:center;
+  opacity:0; pointer-events:none; transition:opacity 420ms ease;
+}
+#cxz-boot.cxb-reveal .cxb-welcome{ opacity:1 }
+#cxz-boot .cxb-w1{ font-size:40px; font-weight:700; letter-spacing:.2em; text-indent:.2em; color:var(--cxb-ink) }
+#cxz-boot .cxb-w2{
+  margin-top:12px; background:var(--cxb-ink); color:#fff; padding:7px 16px 8px;
+  font-family:"Bahnschrift","DIN Alternate","Arial Narrow",ui-monospace,monospace;
+  font-size:27px; font-weight:700; letter-spacing:.12em; text-indent:.12em;
+}
+#cxz-boot .cxb-w3{ margin-top:30px; display:flex; flex-direction:column; align-items:center; gap:10px }
+#cxz-boot .cxb-w3 svg{ width:76px; height:76px; color:var(--cxb-ink); display:block }
+#cxz-boot .cxb-w3 span{
+  font-family:ui-monospace,Consolas,monospace; font-size:10px;
+  letter-spacing:.5em; text-indent:.5em; color:var(--cxb-ink-soft);
+}
+#cxz-boot .cxb-w4{ margin-top:20px; font-size:15px; letter-spacing:.28em; text-indent:.28em; color:var(--cxb-ink) }
+/* 峰值：首末行转蓝 + 发光，标识加蓝色投影（参考件 .dsu-peak） */
+#cxz-boot.cxb-peak .cxb-w1,
+#cxz-boot.cxb-peak .cxb-w4{ color:#2971b8; text-shadow:0 0 14px rgba(41,113,184,.55);
+  transition:color 260ms ease, text-shadow 260ms ease }
+#cxz-boot.cxb-peak .cxb-w3 svg{ filter:drop-shadow(0 0 10px rgba(41,113,184,.45)) }
+
+/* 跳过按钮已按用户要求移除（右上角不放「跳过」）。
+   Esc 仍可跳过，但不显示任何提示。 */
+
+@media (max-width:720px){
+  #cxz-boot .cxb-side{ display:none }
+  #cxz-boot .cxb-plate{ padding:10px 14px 12px 12px }
+  #cxz-boot .cxb-brand-1{ font-size:22px }
+  #cxz-boot .cxb-brand-2,#cxz-boot .cxb-brand-3{ font-size:12px }
+  #cxz-boot .cxb-foot-c{ display:none }
+}
+@media (prefers-reduced-motion:reduce){
+  #cxz-boot .cxb-ticks,
+  #cxz-boot .cxb-reticle svg>circle:nth-of-type(1),
+  #cxz-boot .cxb-voice i,
+  #cxz-boot.cxb-ask .cxb-btn{ animation:none }
+  #cxz-boot .cxb-dust{ display:none }
+}
+/* ==== CXZ-FX2-CSS BEGIN ==== */
+/* ---------- 光标 caret（参考件 .dsu-caret）
+   注意它是一块 **15×4px 的橙色方块**，不是常见的那种 1px 细线；
+   而且**只在交互幕闪**（参考件是 caret.toggle('dsu-on', action !== 'auto')）。 */
+#cxz-boot .cxb-caret{
+  display:inline-block; width:15px; height:4px; background:var(--cxb-accent);
+  transform:translateY(-3px); margin-left:8px; opacity:0; vertical-align:middle;
+}
+#cxz-boot .cxb-caret.cxb-on{ opacity:1; animation:cxb-blink 1s steps(1,end) infinite }
+@keyframes cxb-blink{ 50%{ opacity:0 } }
+
+/* ---------- 右侧档案方块群（参考件 .dsu-watermark + .dsu-wm）
+   极淡的白色渐变 + 发丝边框，像背景里若隐若现的档案面板。 */
+#cxz-boot .cxb-watermark{ position:absolute; inset:0; opacity:0; pointer-events:none; z-index:2;
+  transition:opacity 900ms ease }
+#cxz-boot.cxb-paperon .cxb-watermark{ opacity:1 }
+#cxz-boot .cxb-wm{
+  position:absolute; background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0));
+  border:1px solid rgba(10,10,10,.07); opacity:0; transform:translateY(8px);
+  transition:opacity 700ms ease, transform 700ms cubic-bezier(.16,.84,.24,1);
+}
+#cxz-boot .cxb-wm.cxb-wmon{ opacity:1; transform:none }
+
+/* ---------- 标识逐块拼装：7 个部件依次出现 ---------- */
+#cxz-boot .cxb-pc{ opacity:0; transform:scale(.86); transform-origin:32px 24px;
+  transition:opacity 320ms ease, transform 380ms cubic-bezier(.2,.85,.3,1) }
+#cxz-boot.cxb-logoon .cxb-pc{ opacity:1; transform:none }
+#cxz-boot.cxb-logoon .cxb-pc1{ transition-delay:.00s }
+#cxz-boot.cxb-logoon .cxb-pc2{ transition-delay:.09s }
+#cxz-boot.cxb-logoon .cxb-pc3{ transition-delay:.18s }
+#cxz-boot.cxb-logoon .cxb-pc4{ transition-delay:.24s }
+#cxz-boot.cxb-logoon .cxb-pc5{ transition-delay:.33s }
+#cxz-boot.cxb-logoon .cxb-pc6{ transition-delay:.39s }
+#cxz-boot.cxb-logoon .cxb-pc7{ transition-delay:.45s }
+/* ==== CXZ-FX2-CSS END ==== */
+</style>
+

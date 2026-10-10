@@ -1,0 +1,1418 @@
+<html lang="zh-CN"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智能网联汽车仿真测试软件</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#00a3ff',
+            secondary: '#003d66',
+            dark: '#001a2e',
+            light: '#e0f0ff',
+            danger: '#e74c3c',
+            warning: '#e67e22',
+            success: '#2ecc71',
+            info: '#3498db'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .border-glow {
+        box-shadow: 0 0 5px theme('colors.primary');
+      }
+      .bg-grid {
+        background-image: 
+          linear-gradient(rgba(0, 163, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 163, 255, 0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+      }
+      .scrollbar-thin {
+        scrollbar-width: thin;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: theme('colors.secondary');
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background: theme('colors.primary');
+        border-radius: 3px;
+      }
+    }
+  </style>
+  
+  <style>
+    body {
+      background-color: #001a2e;
+      color: #e0f0ff;
+      font-family: 'Inter', system-ui, sans-serif;
+      overflow: hidden;
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 163, 255, 0.7);
+      }
+      
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 10px rgba(0, 163, 255, 0);
+      }
+      
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(0, 163, 255, 0);
+      }
+    }
+    
+    .rotate {
+      animation: rotate 10s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .slide-in {
+      animation: slideIn 0.5s ease-in-out;
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .risk-level-1 {
+      background: linear-gradient(to right, #2ecc71, #27ae60);
+    }
+    
+    .risk-level-2 {
+      background: linear-gradient(to right, #f1c40f, #f39c12);
+    }
+    
+    .risk-level-3 {
+      background: linear-gradient(to right, #e67e22, #d35400);
+    }
+    
+    .risk-level-4 {
+      background: linear-gradient(to right, #e74c3c, #c0392b);
+    }
+    
+    .radar-sweep {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .radar-sweep::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        transparent 48%,
+        rgba(0, 163, 255, 0.3) 49%,
+        rgba(0, 163, 255, 0.3) 51%,
+        transparent 52%
+      );
+      animation: radarSweep 3s linear infinite;
+    }
+    
+    @keyframes radarSweep {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .vehicle-path {
+      stroke-dasharray: 5;
+      animation: dash 1s linear infinite;
+    }
+    
+    @keyframes dash {
+      to {
+        stroke-dashoffset: -10;
+      }
+    }
+    
+    .sensor-pulse {
+      animation: sensorPulse 2s infinite;
+    }
+    
+    @keyframes sensorPulse {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.7;
+      }
+      70% {
+        transform: scale(1.2);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(0.95);
+        opacity: 0;
+      }
+    }
+    
+    .data-update {
+      animation: dataUpdate 0.5s ease-in-out;
+    }
+    
+    @keyframes dataUpdate {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+        color: #00a3ff;
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+    
+    .hud-element {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hud-element::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      animation: hudScan 3s infinite;
+    }
+    
+    @keyframes hudScan {
+      0% {
+        left: -100%;
+      }
+      100% {
+        left: 100%;
+      }
+    }
+  </style>
+</head>
+<body class="h-screen flex flex-col">
+  <!-- 顶部导航栏 -->
+  <header class="bg-dark border-b border-primary/30 py-2 px-4 flex justify-between items-center">
+    <div class="flex items-center space-x-2">
+      <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/86e2e6e0c6444ce7a94c49ccead2ffbe~tplv-a9rns2rl98-image.image?rcl=20251223200728C52D5495522881518E76&amp;rk3s=8e244e95&amp;rrcfp=f06b921b&amp;x-expires=1769083692&amp;x-signature=A41BdOVlCHA5j9lUxsfUNNguOyk%3D" alt="智能网联汽车图标" class="w-8 h-8 rounded-full object-cover">
+      <h1 class="text-xl font-bold text-white">智能网联汽车仿真测试软件</h1>
+      <span class="bg-blue-600 text-xs text-white px-2 py-0.5 rounded-full ml-2">专业版</span>
+    </div>
+    
+    <!-- 功能模块选择器 -->
+    <div class="flex items-center space-x-4">
+      <div class="flex bg-secondary rounded-lg p-1" id="moduleSelector">
+        <button class="module-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center bg-primary text-white" data-module="sceneManagement">
+          <i class="fa fa-map mr-2"></i>
+          场景管理
+        </button>
+        <button class="module-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center text-gray-400" data-module="simulationTest">
+          <i class="fa fa-car mr-2"></i>
+          仿真测试
+        </button>
+        <button class="module-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center text-gray-400" data-module="dataAnalysis">
+          <i class="fa fa-bar-chart mr-2"></i>
+          数据分析
+        </button>
+        <button class="module-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center text-gray-400" data-module="reportGeneration">
+          <i class="fa fa-file-text mr-2"></i>
+          报告生成
+        </button>
+      </div>
+      
+      <!-- 测试模式选择器 (默认显示) -->
+      <div class="flex bg-secondary rounded-lg p-1" id="testModeSelector">
+        <button class="mode-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center" data-mode="mil">
+          <i class="fa fa-cogs mr-2"></i>
+          模型在环
+        </button>
+        <button class="mode-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center" data-mode="sil">
+          <i class="fa fa-code mr-2"></i>
+          软件在环
+        </button>
+        <button class="mode-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center" data-mode="hil">
+          <i class="fa fa-microchip mr-2"></i>
+          硬件在环
+        </button>
+        <button class="mode-btn px-4 py-1 rounded-md text-sm font-medium transition-all duration-300 flex items-center" data-mode="vil">
+          <i class="fa fa-wrench mr-2"></i>
+          整车在环
+        </button>
+      </div>
+      
+      <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-400">系统状态:</span>
+        <span id="systemStatus" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success/20 text-success cursor-pointer hover:bg-success/30 transition-colors">
+          <span class="w-2 h-2 rounded-full bg-success mr-1 pulse"></span>
+          运行中
+        </span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- 主内容区 -->
+  <main class="flex flex-1 overflow-hidden">
+    <!-- 场景管理视图 (默认显示) -->
+    <div id="sceneManagementView" class="w-full flex flex-1 overflow-hidden">
+      <!-- 左侧场景控制面板 -->
+      <aside class="w-1/4 bg-secondary border-r border-primary/30 flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-2">场景选择</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">场景类型</label>
+              <select id="sceneType" class="w-full bg-dark border border-primary/30 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-primary">
+                <option value="urban">城市道路</option>
+                <option value="highway">高速公路</option>
+                <option value="rural">乡村道路</option>
+                <option value="parking">停车场</option>
+                <option value="tunnel">隧道</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">预设场景</label>
+              <div class="space-y-2 max-h-40 overflow-y-auto scrollbar-thin">
+                <div class="flex items-center space-x-2 p-2 bg-dark rounded-md hover:bg-primary/20 cursor-pointer">
+                  <i class="fa fa-check-circle text-primary"></i>
+                  <span class="text-sm text-white">城市街道路口</span>
+                </div>
+                <div class="flex items-center space-x-2 p-2 bg-dark rounded-md hover:bg-primary/20 cursor-pointer">
+                  <i class="fa fa-circle-o text-gray-400"></i>
+                  <span class="text-sm text-white">高速公路变道</span>
+                </div>
+                <div class="flex items-center space-x-2 p-2 bg-dark rounded-md hover:bg-primary/20 cursor-pointer">
+                  <i class="fa fa-circle-o text-gray-400"></i>
+                  <span class="text-sm text-white">乡村道路会车</span>
+                </div>
+                <div class="flex items-center space-x-2 p-2 bg-dark rounded-md hover:bg-primary/20 cursor-pointer">
+                  <i class="fa fa-circle-o text-gray-400"></i>
+                  <span class="text-sm text-white">地下停车场</span>
+                </div>
+                <div class="flex items-center space-x-2 p-2 bg-dark rounded-md hover:bg-primary/20 cursor-pointer">
+                  <i class="fa fa-circle-o text-gray-400"></i>
+                  <span class="text-sm text-white">隧道进出</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-2">环境参数</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">天气条件</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button class="weather-btn bg-dark border border-primary/30 rounded-md px-2 py-1 text-xs text-center hover:bg-primary/20 transition-colors" data-weather="sunny">
+                  <i class="fa fa-sun-o mr-1"></i>晴天
+                </button>
+                <button class="weather-btn bg-dark border border-primary/30 rounded-md px-2 py-1 text-xs text-center hover:bg-primary/20 transition-colors" data-weather="rainy">
+                  <i class="fa fa-tint mr-1"></i>雨天
+                </button>
+                <button class="weather-btn bg-dark border border-primary/30 rounded-md px-2 py-1 text-xs text-center hover:bg-primary/20 transition-colors" data-weather="foggy">
+                  <i class="fa fa-cloud mr-1"></i>雾天
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">时间</label>
+              <div class="grid grid-cols-2 gap-2">
+                <button class="time-btn bg-dark border border-primary/30 rounded-md px-2 py-1 text-xs text-center hover:bg-primary/20 transition-colors" data-time="day">
+                  <i class="fa fa-moon-o mr-1"></i>白天
+                </button>
+                <button class="time-btn bg-dark border border-primary/30 rounded-md px-2 py-1 text-xs text-center hover:bg-primary/20 transition-colors" data-time="night">
+                  <i class="fa fa-moon-o mr-1"></i>夜晚
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">交通流量</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="trafficDensity" min="1" max="10" value="5" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="trafficValue" class="text-sm font-mono text-white min-w-[30px] text-right">5</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">道路条件</label>
+              <select id="roadCondition" class="w-full bg-dark border border-primary/30 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-primary">
+                <option value="dry">干燥</option>
+                <option value="wet">湿滑</option>
+                <option value="icy">结冰</option>
+                <option value="gravel">砂石</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-2">V2X通信设置</h2>
+          <div class="space-y-3">
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="enableV2V" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary" checked="">
+              <label for="enableV2V" class="text-sm text-white">车辆间通信 (V2V)</label>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="enableV2I" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary" checked="">
+              <label for="enableV2I" class="text-sm text-white">车与基础设施通信 (V2I)</label>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="enableV2P" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary">
+              <label for="enableV2P" class="text-sm text-white">车与行人通信 (V2P)</label>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">通信延迟 (ms)</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="communicationDelay" min="0" max="200" value="50" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="delayValue" class="text-sm font-mono text-white min-w-[40px] text-right">50</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div class="mt-auto p-4 border-t border-primary/30">
+          <div class="grid grid-cols-2 gap-3">
+            <button id="loadScene" class="bg-primary hover:bg-primary/80 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+              <i class="fa fa-folder-open mr-2"></i>加载场景
+            </button>
+            <button id="saveScene" class="bg-dark border border-primary hover:bg-primary/20 text-primary font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+              <i class="fa fa-save mr-2"></i>保存场景
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 中央场景可视化区域 -->
+      <section class="w-2/4 flex flex-col bg-dark overflow-hidden">
+        <!-- 场景俯视图 -->
+        <div class="h-1/2 border-b border-primary/30 relative">
+          <div class="absolute top-4 left-4 z-10 bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30">
+            <h3 class="text-sm font-semibold text-white mb-1">场景俯视图</h3>
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="text-gray-400">缩放:</span>
+              <span class="font-mono text-white">1:1000</span>
+              <span class="text-gray-400">更新:</span>
+              <span class="font-mono text-white">实时</span>
+            </div>
+          </div>
+          
+          <div class="absolute top-4 right-4 z-10 flex space-x-2">
+            <button class="bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30 text-primary hover:bg-primary/20 transition-colors">
+              <i class="fa fa-expand"></i>
+            </button>
+            <button class="bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30 text-primary hover:bg-primary/20 transition-colors">
+              <i class="fa fa-camera"></i>
+            </button>
+          </div>
+          
+          <div class="w-full h-full relative overflow-hidden">
+            <!-- 背景视频 -->
+            <video id="sceneVideo" class="w-full h-full object-cover" loop="" muted="">
+              <source src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/5a878aaa05374ecdac6e459b40d0721d.png~tplv-a9rns2rl98-24:720:720.png?rcl=2025122709315315E05641FD5D9AD25B77&amp;rk3s=8e244e95&amp;rrcfp=8a172a1a&amp;x-expires=1767403914&amp;x-signature=IWPEx94IUJr%2F0La2pajFjVPQ2Xo%3D" type="video/mp4">
+              <!-- 回退到静态图片 -->
+              <img src="https://p3-flow-imagex-download-sign.byteimg.com/tos-cn-i-a9rns2rl98/5a878aaa05374ecdac6e459b40d0721d.png~tplv-a9rns2rl98-24:720:720.png?rcl=2025122709315315E05641FD5D9AD25B77&amp;rk3s=8e244e95&amp;rrcfp=8a172a1a&amp;x-expires=1767403914&amp;x-signature=IWPEx94IUJr%2F0La2pajFjVPQ2Xo%3D" alt="高速公路场景" class="w-full h-full object-cover">
+            </video>
+            
+            <!-- 视频控制按钮 -->
+            <div class="absolute bottom-4 right-4 z-10 flex space-x-2">
+              <button id="playPauseBtn" class="bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30 text-primary hover:bg-primary/20 transition-colors">
+                <i class="fa fa-play"></i>
+              </button>
+            </div>
+            
+            <!-- 动态场景容器 -->
+            <div id="dynamicScene" class="absolute inset-0 pointer-events-none">
+              <!-- 动态元素将通过JavaScript添加 -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- 车辆内部视角 -->
+        <div class="h-1/2 relative">
+          <div class="absolute top-4 left-4 z-10 bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30">
+            <h3 class="text-sm font-semibold text-white mb-1">车辆内部视角</h3>
+            <div class="flex items-center space-x-2 text-xs">
+              <span class="text-gray-400">视角:</span>
+              <span class="font-mono text-white">驾驶员</span>
+              <span class="text-gray-400">模式:</span>
+              <span class="font-mono text-white">自动驾驶</span>
+            </div>class="<textarea name="" id="" cols="332" rows="10"></textarea>
+
+          </div>class="<textarea name="" id="" cols="20" rows="10"></textarea>
+          
+          <div class="absolute top-4 right-4 z-10 flex space-x-2">
+            <button class="bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30 text-primary hover:bg-primary/20 transition-colors">
+              <i class="fa fa-exchange"></i>
+            </button>
+            <button class="bg-dark/70 backdrop-blur-sm p-2 rounded-md border border-primary/30 text-primary hover:bg-primary/20 transition-colors">
+              <i class="fa fa-eye"></i>
+            </button>
+          </div>
+          
+          <div class="w-full h-full relative">
+            <img src="https://p3-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/2f3a4aae5231414e81cef509b90fd163~tplv-a9rns2rl98-image.image?rcl=20251223200728C52D5495522881518E76&amp;rk3s=8e244e95&amp;rrcfp=f06b921b&amp;x-expires=1769083699&amp;x-signature=cqpGVa535BGZ%2FUxFamGazLu35js%3D" alt="车辆仪表盘" class="w-full h-full object-cover">
+            
+            <!-- HUD 信息叠加层 - 参考图样式 -->
+            <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div class="hud-element bg-dark/30 backdrop-blur-sm p-4 rounded-lg border border-primary/50 w-full max-w-4xl">
+                <!-- 顶部状态信息 -->
+                <div class="flex justify-between items-center mb-6">
+                  <div class="flex items-center">
+                    <span class="text-green-500 text-lg font-bold mr-4">READY</span>
+                    <span class="text-white text-sm">02:38</span>
+                  </div>
+                  <div class="text-white text-sm">
+                    <span class="mr-4">AVTO</span>
+                    <span>--°C</span>
+                  </div>
+                </div>
+                
+                <!-- 中央速度显示 -->
+                <div class="flex justify-center items-center mb-8">
+                  <div class="text-center">
+                    <div class="text-6xl font-bold text-white mb-2" id="currentSpeed">0</div>
+                    <div class="text-white text-sm">km/h</div>wsww
+                  </div>
+                </div>
+                
+                <!-- 底部信息栏 -->
+                <div class="flex justify-between items-center">
+                  <div class="text-white text-xs">
+                    <div class="mb-1">41.5 km</div>
+                    <div>59 min</div>
+                  </div>
+                  
+                  <div class="flex space-x-4">
+                    <div class="text-center text-white text-xs">
+                      <div class="mb-1">0.0</div>
+                      <div>L/100</div>
+                    </div>
+                    <div class="text-center text-white text-xs">
+                      <div class="mb-1">000</div>
+                      <div>km</div>
+                    </div>
+                    <div class="text-center text-white text-xs">
+                      <div class="mb-1">62</div>
+                      <div>km/h</div>
+                    </div>
+                    <div class="text-center text-white text-xs">
+                      <div class="mb-1">0.0</div>
+                      <div>h</div>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="text-white text-lg font-bold">P</div>
+                    <div class="text-xs text-white">10:00</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>class+ gd
+      
+      <!-- 右侧测试参数面板 -->
+      <aside class="w-1/4 bg-secondary border-l border-primary/30 flex flex-col overflow-hidden">
+        <!-- 测试目标 -->
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-3">测试目标</h2>
+          <div class="space-y-2">
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="testADAS" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary" checked="">
+              <label for="testADAS" class="text-sm text-white">ADAS功能测试</label>
+            </div>type="test
+            ds
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="testV2X" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary" checked="">
+              <label for="testV2X" class="text-sm text-white">V2X通信测试</label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="testSafety" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary">
+              <label for="testSafety" class="text-sm text-white">安全性能测试</label>
+            </div>
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="testRegulation" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary">
+              <label for="testRegulation" class="text-sm text-white">法规合规测试</label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 测试参数 -->
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-3">测试参数</h2>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">测试时长 (分钟)</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="testDuration" min="1" max="120" value="30" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="durationValue" class="text-sm font-mono text-white min-w-[40px] text-right">30</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">数据采样率 (Hz)</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="sampleRate" min="1" max="100" value="20" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="rateValue" class="text-sm font-mono text-white min-w-[40px] text-right">20</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">最大速度 (km/h)</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="maxSpeed" min="10" max="200" value="120" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="speedValue" class="text-sm font-mono text-white min-w-[40px] text-right">120</span>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">测试重复次数</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="repeatCount" min="1" max="10" value="3" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="repeatValue" class="text-sm font-mono text-white min-w-[30px] text-right">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- AI智能评估 -->
+        <div class="p-4 border-b border-primary/30">
+          <h2 class="text-lg font-semibold text-white mb-3">AI智能评估</h2>
+          <div class="space-y-3">
+            <div class="flex items-center space-x-2">
+              <input type="checkbox" id="enableAI" class="w-4 h-4 rounded border-primary/30 bg-dark text-primary focus:ring-primary" checked="">
+              <label for="enableAI" class="text-sm text-white">启用AI评估</label>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-400 mb-1">异常检测灵敏度</label>
+              <div class="flex items-center space-x-2">
+                <input type="range" id="aiSensitivity" min="1" max="10" value="7" class="w-full h-2 bg-dark rounded-lg appearance-none cursor-pointer">
+                <span id="sensitivityValue" class="text-sm font-mono text-white min-w-[30px] text-right">7</span>
+              </div>
+            </div>
+            
+            <div class="bg-dark border border-primary/30 rounded-md p-3">
+              <h3 class="text-sm font-semibold text-primary mb-2">AI预检测结果</h3>
+              <div class="space-y-2">
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-gray-400">潜在碰撞风险</span>
+                  <span class="text-xs text-warning">中等</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-gray-400">通信延迟异常</span>
+                  <span class="text-xs text-success">低</span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-xs text-gray-400">传感器数据不一致</span>
+                  <span class="text-xs text-danger">高</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 底部操作按钮 -->
+        <div class="mt-auto p-4 border-t border-primary/30">
+          <div class="grid grid-cols-2 gap-3">
+            <button id="startTest" class="bg-primary hover:bg-primary/80 text-white font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+              <i class="fa fa-play mr-2"></i>开始测试
+            </button>
+            <button id="resetScene" class="bg-dark border border-danger hover:bg-danger/20 text-danger font-medium py-2 px-4 rounded-md transition-colors flex items-center justify-center">
+              <i class="fa fa-refresh mr-2"></i>重置场景
+            </button>
+          </div>
+        </div>
+      </aside>
+    </div>
+    
+    <!-- 仿真测试视图 (默认隐藏) -->
+    <div id="simulationTestView" class="w-full flex flex-1 overflow-hidden hidden">
+      <!-- 仿真测试视图内容 -->
+      <div class="w-full h-full flex items-center justify-center">
+        <div class="text-center">
+          <i class="fa fa-car text-6xl text-primary mb-4"></i>
+          <h2 class="text-2xl font-bold text-white mb-2">仿真测试模块</h2>
+          <p class="text-gray-400">点击"开始测试"按钮启动仿真测试</p>
+        </div>
+    </div>clss='<textarea name="30" id="58" cols="30" rows="10"></textarea>
+    
+    <!-- 数据分析视图 (默认隐藏) -->
+    <div id="dataAnalysisView" class="w-full flex flex-1 overflow-hidden hidden">
+      <!-- 数据分析视图内容 -->
+      <div class="w-full h-full flex items-center justify-center">
+        <div class="text-center">
+          <i class="fa fa-bar-chart text-6xl text-primary mb-4"></i>
+          <h2 class="text-2xl font-bold text-white mb-2">数据分析模块</h2>
+          <p class="text-gray-400">完成测试后查看详细数据分析</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 报告生成视图 (默认隐藏) -->
+    <div id="reportGenerationView" class="w-full flex flex-1 overflow-hidden hidden">
+      <!-- 报告生成视图内容 -->
+      <div class="w-full h-full flex items-center justify-center">
+        <div class="text-center">
+          <i class="fa fa-file-text text-6xl text-primary mb-4"></i>
+          <h2 class="text-2xl font-bold text-white mb-2">报告生成模块</h2>
+          <p class="text-gray-400">基于测试结果生成合规性评估报告</p>
+        </div>cliss‘=<textarea name="" id="" cols="2n0" rows="10"></textarea>
+      </div>"<textarea name="" id="" cols="20n0" rows="10"></textarea>
+    </div>
+      <textarea name="" id="" cols="2mn0" rows="10"></textarea>
+  </main>
+  
+  <!-- 视频上传模态窗口 -->
+  <div id="videoUploadModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center">
+    <div class="bg-dark border border-primary/50 rounded-lg p-6 w-full max-w-md fade-in">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold text-white">代码文件上传</h3>
+        <button id="closeModalBtn" class="text-gray-400 hover:text-white transition-colors">
+          <i class="fa fa-times"></i>
+        </button>text20texttime semce name
+      </div>
+      '<textarea name="" id="" cols="30" rows="10"></textarea>
+      <div class="mb-4">
+        <label class="block text-sm font-medium teat-gray-400 mb-2">选择本地文件</label>
+        <div class="border-2 border-dashed border-primary/30 rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer" id="dropZone">
+          <input type="file" id="videoFileInput" accept="video/*" class="hidden">
+          <i class="fa fa-cloud-upload text-4xl text-primary mb-2"></i>
+          <p class="text-white text-sm mb-1">点击或拖拽文件到此处</p>
+          <p class="text-gray-400 text-xs">支持  java.cs.c等格式</p>
+        </div>
+      </div>
+      <textarea name="" id="" cols="20" rows="10"></textarea>
+      
+      <div id="fileInfo" class="mb-4 hidden">
+        <div class="bg-secondary/50 rounded-md p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm text-white font-medium" id="fileName">video.mp4</span>
+            <span class="text-xs text-gray-400" id="fileSize">2.5 MB</span>
+          </div>
+          <div class="w-full bg-dark rounded-full h-1.5">
+            <div id="uploadProgress" class="bg-primary h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="flex justify-end space-x-3">
+        <button id="cancelUploadBtn" class="bg-dark border border-gray-500 hover:bg-gray-500/20 text-gray-400 font-medium py-2 px-4 rounded-md transition-colors">
+          取消
+        </button>
+        <button id="confirmUploadBtn" class="bg-primary hover:bg-primary/80 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled="">
+          确认上传
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 模块切换功能
+      const moduleButtons = document.querySelectorAll('.module-btn');
+      const views = {
+        sceneManagement: document.getElementById('sceneManagementView'),
+        simulationTest: document.getElementById('simulationTestView'),
+        dataAnalysis: document.getElementById('dataAnalysisView'),
+        reportGeneration: document.getElementById('reportGenerationView')
+      };
+      
+      moduleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const module = this.getAttribute('data-module');
+          
+          // 更新按钮样式
+          moduleButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('text-gray-400');
+          });
+          this.classList.remove('text-gray-400');
+          this.classList.add('bg-primary', 'text-white');
+          
+          // 显示对应视图
+          Object.keys(views).forEach(key => {
+            views[key].classList.add('hidden');
+          });
+          views[module].classList.remove('hidden');
+        });
+      });
+      
+      // 测试模式切换功能
+      const modeButtons = document.querySelectorAll('.mode-btn');
+      modeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // 更新按钮样式
+          modeButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+            btn.classList.add('text-gray-400');
+          });
+          this.classList.remove('text-gray-400');
+          this.classList.add('bg-primary', 'text-white');
+          
+          // 这里可以添加切换测试模式的逻辑
+          const mode = this.getAttribute('data-mode');
+          console.log(`切换到测试模式: ${mode}`);
+        });
+      });
+      
+      // 天气条件选择
+      const weatherButtons = document.querySelectorAll('.weather-btn');
+      weatherButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          weatherButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+          });
+          this.classList.add('bg-primary', 'text-white');
+          
+          const weather = this.getAttribute('data-weather');
+          console.log(`设置天气: ${weather}`);
+        });
+      });
+      
+      // 时间选择
+      const timeButtons = document.querySelectorAll('.time-btn');
+      timeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          timeButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+          });
+          this.classList.add('bg-primary', 'text-white');
+          
+          const time = this.getAttribute('data-time');
+          console.log(`设置时间: ${time}`);
+        });
+      });
+      
+      // 路径模式选择
+      const pathModeButtons = document.querySelectorAll('.path-mode-btn');
+      pathModeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          pathModeButtons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white');
+          });
+          this.classList.add('bg-primary', 'text-white');
+          
+          const mode = this.getAttribute('data-mode');
+          console.log(`设置路径模式: ${mode}`);
+        });
+      });
+      
+      // 滑块值实时更新
+      const trafficDensity = document.getElementById('trafficDensity');
+      const trafficValue = document.getElementById('trafficValue');
+      trafficDensity.addEventListener('input', function() {
+        trafficValue.textContent = this.value;
+      });
+      
+      const communicationDelay = document.getElementById('communicationDelay');
+      const delayValue = document.getElementById('delayValue');
+      communicationDelay.addEventListener('input', function() {
+        delayValue.textContent = this.value;
+      });
+      
+      const testDuration = document.getElementById('testDuration');
+      const durationValue = document.getElementById('durationValue');
+      testDuration.addEventListener('input', function() {
+        durationValue.textContent = this.value;
+      });
+      
+      const sampleRate = document.getElementById('sampleRate');
+      const rateValue = document.getElementById('rateValue');
+      sampleRate.addEventListener('input', function() {
+        rateValue.textContent = this.value;
+      });
+      
+      const maxSpeed = document.getElementById('maxSpeed');
+      const speedValue = document.getElementById('speedValue');
+      maxSpeed.addEventListener('input', function() {
+        speedValue.textContent = this.value;
+      });
+      
+      const repeatCount = document.getElementById('repeatCount');
+      const repeatValue = document.getElementById('repeatValue');
+      repeatCount.addEventListener('input', function() {
+        repeatValue.textContent = this.value;
+      });
+      
+      const aiSensitivity = document.getElementById('aiSensitivity');
+      const sensitivityValue = document.getElementById('sensitivityValue');
+      aiSensitivity.addEventListener('input', function() {
+        sensitivityValue.textContent = this.value;
+      });
+      
+      // 按钮点击事件
+      document.getElementById('loadScene').addEventListener('click', function() {
+        console.log('加载场景');
+        // 这里可以添加加载场景的逻辑
+      });
+      
+      document.getElementById('saveScene').addEventListener('click', function() {
+        console.log('保存场景');
+        // 这里可以添加保存场景的逻辑
+      });
+      
+      document.getElementById('startTest').addEventListener('click', function() {
+        console.log('开始测试');
+        // 切换到仿真测试视图
+        moduleButtons.forEach(btn => {
+          btn.classList.remove('bg-primary', 'text-white');
+          btn.classList.add('text-gray-400');
+        });
+        document.querySelector('[data-module="simulationTest"]').classList.remove('text-gray-400');
+        document.querySelector('[data-module="simulationTest"]').classList.add('bg-primary', 'text-white');
+        
+        Object.keys(views).forEach(key => {
+          views[key].classList.add('hidden');
+        });
+        views['simulationTest'].classList.remove('hidden');
+      });
+      
+      document.getElementById('resetScene').addEventListener('click', function() {
+        console.log('重置场景');
+        // 这里可以添加重置场景的逻辑
+      });
+      
+      // 速度动画函数
+      function animateSpeed() {
+        const speedElement = document.getElementById('currentSpeed');
+        let currentSpeed = 0;
+        const targetSpeed = 20;
+        const duration = 30000; // 30秒内完成动画
+        const frameRate = 60;
+        const totalFrames = duration / (1000 / frameRate);
+        let frame = 0;
+        
+        function updateSpeed() {
+          if (frame < totalFrames) {
+            // 使用缓动函数使动画更自然
+            const progress = frame / totalFrames;
+            const easeOutProgress = 1 - Math.pow(1 - progress, 3); // 缓出效果
+            currentSpeed = Math.round(easeOutProgress * targetSpeed);
+            speedElement.textContent = currentSpeed;
+            
+            // 添加数据更新动画效果
+            speedElement.classList.add('data-update');
+            setTimeout(() => {
+              speedElement.classList.remove('data-update');
+            }, 500);
+            
+            frame++;
+            requestAnimationFrame(updateSpeed);
+          }
+        }
+        
+        updateSpeed();
+      }
+      
+      // 模拟数据更新
+      function updateSimulationData() {
+        // 模拟风险等级变化
+        const riskLevel = document.getElementById('riskLevel');
+        if (riskLevel) {
+          const levels = ['1', '2', '3', '4'];
+          const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+          riskLevel.textContent = randomLevel;
+          
+          // 更新风险等级描述
+          let riskDescription = '';
+          switch(randomLevel) {
+            case '1':
+              riskDescription = '低风险';
+              break;
+            case '2':
+              riskDescription = '中等风险';
+              break;
+            case '3':
+              riskDescription = '高风险';
+              break;
+            case '4':
+              riskDescription = '极高风险';
+              break;
+          }
+          riskLevel.nextElementSibling.textContent = riskDescription;
+        }
+        
+        // 模拟传感器数据更新
+        // 这里可以添加更多的数据更新逻辑
+        
+        // 每隔3秒更新一次数据
+        setTimeout(updateSimulationData, 3000);
+      }
+      
+      // 动态场景模拟函数
+      function initDynamicScene() {
+        const sceneContainer = document.getElementById('dynamicScene');
+        const sceneWidth = sceneContainer.offsetWidth;
+        const sceneHeight = sceneContainer.offsetHeight;
+        
+        // 创建SVG元素
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
+        svg.setAttribute('viewBox', `0 0 ${sceneWidth} ${sceneHeight}`);
+        sceneContainer.appendChild(svg);
+        
+        // 主测试车辆配置
+        const mainVehicle = {
+          element: null,
+          x: sceneWidth / 2,
+          y: sceneHeight / 2,
+          width: 40,
+          height: 20,
+          speed: 0,
+          maxSpeed: 20,
+          acceleration: 0.05
+        };
+        
+        // 其他车辆配置
+        const otherVehicles = [
+          { x: sceneWidth * 0.3, y: sceneHeight * 0.1, width: 30, height: 15, speed: 8, color: '#e74c3c', id: 'vehicle1' },
+          { x: sceneWidth * 0.7, y: sceneHeight * 0.2, width: 25, height: 12, speed: 6, color: '#2ecc71', id: 'vehicle2' },
+          { x: sceneWidth * 0.6, y: sceneHeight * 0.15, width: 28, height: 14, speed: 5, color: '#f39c12', id: 'vehicle3' },
+          { x: sceneWidth * 0.2, y: sceneHeight * 0.05, width: 32, height: 16, speed: 9, color: '#9b59b6', id: 'vehicle4' }
+        ];
+        
+        // 创建主测试车辆
+        function createMainVehicle() {
+          const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          group.setAttribute('id', 'mainVehicle');
+          
+          // 车辆主体
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          rect.setAttribute('x', -mainVehicle.width / 2);
+          rect.setAttribute('y', -mainVehicle.height / 2);
+          rect.setAttribute('width', mainVehicle.width);
+          rect.setAttribute('height', mainVehicle.height);
+          rect.setAttribute('rx', 5);
+          rect.setAttribute('fill', '#00a3ff');
+          rect.classList.add('pulse');
+          group.appendChild(rect);
+          
+          // 车辆方向指示器
+          const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          polygon.setAttribute('points', `0,-${mainVehicle.height / 2} ${mainVehicle.width / 4},0 0,${mainVehicle.height / 2} -${mainVehicle.width / 4},0`);
+          polygon.setAttribute('fill', '#ffffff');
+          group.appendChild(polygon);
+          
+          // 传感器范围
+          const sensorRings = [30, 60, 90];
+          sensorRings.forEach((radius, index) => {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', 0);
+            circle.setAttribute('cy', 0);
+            circle.setAttribute('r', radius);
+            circle.setAttribute('fill', 'none');
+            circle.setAttribute('stroke', '#00a3ff');
+            circle.setAttribute('stroke-width', '1');
+            circle.classList.add('sensor-pulse');
+            if (index > 0) {
+              circle.style.animationDelay = `${index * 0.5}s`;
+            }
+            group.appendChild(circle);
+          });
+          
+          // 设置车辆位置
+          group.setAttribute('transform', `translate(${mainVehicle.x}, ${mainVehicle.y})`);
+          svg.appendChild(group);
+          mainVehicle.element = group;
+        }
+        
+        // 创建其他车辆
+        function createOtherVehicles() {
+          otherVehicles.forEach(vehicle => {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            group.setAttribute('id', vehicle.id);
+            
+            // 车辆主体
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('x', -vehicle.width / 2);
+            rect.setAttribute('y', -vehicle.height / 2);
+            rect.setAttribute('width', vehicle.width);
+            rect.setAttribute('height', vehicle.height);
+            rect.setAttribute('rx', 3);
+            rect.setAttribute('fill', vehicle.color);
+            group.appendChild(rect);
+            
+            // 车辆方向指示器
+            const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            polygon.setAttribute('points', `0,-${vehicle.height / 2} ${vehicle.width / 4},0 0,${vehicle.height / 2} -${vehicle.width / 4},0`);
+            polygon.setAttribute('fill', '#ffffff');
+            group.appendChild(polygon);
+            
+            // 设置车辆位置
+            group.setAttribute('transform', `translate(${vehicle.x}, ${vehicle.y})`);
+            svg.appendChild(group);
+            
+            // 创建距离标签
+            const distanceLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            distanceLabel.setAttribute('id', `${vehicle.id}-distance`);
+            distanceLabel.setAttribute('x', 0);
+            distanceLabel.setAttribute('y', -vehicle.height / 2 - 10);
+            distanceLabel.setAttribute('text-anchor', 'middle');
+            distanceLabel.setAttribute('fill', '#ffffff');
+            distanceLabel.setAttribute('font-size', '10');
+            distanceLabel.setAttribute('font-family', 'monospace');
+            distanceLabel.classList.add('hud-element');
+            group.appendChild(distanceLabel);
+          });
+        }
+        
+        // 更新车辆位置和速度
+        function updateVehicles() {
+          // 更新主车辆速度（与仪表盘速度同步）
+          if (mainVehicle.speed < mainVehicle.maxSpeed) {
+            mainVehicle.speed += mainVehicle.acceleration;
+            if (mainVehicle.speed > mainVehicle.maxSpeed) {
+              mainVehicle.speed = mainVehicle.maxSpeed;
+            }
+          }
+          
+          // 更新主车辆位置（保持在画面中心）
+          mainVehicle.element.setAttribute('transform', `translate(${mainVehicle.x}, ${mainVehicle.y})`);
+          
+          // 更新其他车辆位置
+          otherVehicles.forEach(vehicle => {
+            const vehicleElement = document.getElementById(vehicle.id);
+            const distanceLabel = document.getElementById(`${vehicle.id}-distance`);
+            
+            // 计算车辆新位置（从上向下移动）
+            vehicle.y += vehicle.speed * 0.2;
+            
+            // 如果车辆移出画面，从上侧重新进入
+            if (vehicle.y > sceneHeight + vehicle.height) {
+              vehicle.y = -vehicle.height;
+              vehicle.x = sceneWidth * (0.2 + Math.random() * 0.6); // 随机X位置
+            }
+            
+            // 更新车辆位置
+            vehicleElement.setAttribute('transform', `translate(${vehicle.x}, ${vehicle.y})`);
+            
+            // 计算与主车辆的距离
+            const dx = vehicle.x - mainVehicle.x;
+            const dy = vehicle.y - mainVehicle.y;
+            const distance = Math.sqrt(dx * dx + dy * dy).toFixed(0);
+            
+            // 更新距离标签
+            distanceLabel.textContent = `${distance}m`;
+            
+            // 如果距离在传感器范围内，显示连接线
+            if (distance < 150) {
+              // 检查是否已存在连接线
+              let line = document.getElementById(`line-${vehicle.id}`);
+              if (!line) {
+                line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('id', `line-${vehicle.id}`);
+                line.setAttribute('stroke', vehicle.color);
+                line.setAttribute('stroke-width', '1');
+                line.setAttribute('stroke-dasharray', '5,5');
+                line.classList.add('vehicle-path');
+                svg.appendChild(line);
+              }
+              
+              // 更新连接线位置
+              line.setAttribute('x1', mainVehicle.x);
+              line.setAttribute('y1', mainVehicle.y);
+              line.setAttribute('x2', vehicle.x);
+              line.setAttribute('y2', vehicle.y);
+              line.style.display = 'block';
+            } else {
+              // 隐藏超出范围的连接线
+              const line = document.getElementById(`line-${vehicle.id}`);
+              if (line) {
+                line.style.display = 'none';
+              }
+            }
+          });
+          
+          // 持续动画
+          requestAnimationFrame(updateVehicles);
+        }
+        
+        // 创建雷达扫描效果
+        function createRadarSweep() {
+          const radar = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          radar.setAttribute('cx', mainVehicle.x);
+          radar.setAttribute('cy', mainVehicle.y);
+          radar.setAttribute('r', 150);
+          radar.setAttribute('fill', 'none');
+          radar.setAttribute('stroke', 'rgba(0, 163, 255, 0.3)');
+          radar.setAttribute('stroke-width', '2');
+          radar.classList.add('radar-sweep');
+          svg.appendChild(radar);
+        }
+        
+        // 初始化场景
+        createMainVehicle();
+        createOtherVehicles();
+        createRadarSweep();
+        
+        // 主动画循环
+        function animate() {
+          updateVehicles();
+          requestAnimationFrame(animate);
+        }
+        
+        // 启动动画
+        animate();
+      }
+      
+      // 视频控制功能
+      const video = document.getElementById('sceneVideo');
+      const playPauseBtn = document.getElementById('playPauseBtn');
+      
+      if (video && playPauseBtn) {
+        playPauseBtn.addEventListener('click', function() {
+          if (video.paused) {
+            video.play();
+            playPauseBtn.innerHTML = '<i class="fa fa-pause"></i>';
+          } else {
+            video.pause();
+            playPauseBtn.innerHTML = '<i class="fa fa-play"></i>';
+          }
+        });
+        
+        // 尝试自动播放视频
+        video.play().catch(error => {
+          console.log('视频自动播放失败:', error);
+          // 用户交互后再尝试播放
+          document.addEventListener('click', function startVideo() {
+            video.play();
+            playPauseBtn.innerHTML = '<i class="fa fa-pause"></i>';
+            document.removeEventListener('click', startVideo);
+          }, { once: true });
+        });
+      }
+      
+      // 视频上传功能
+      const systemStatus = document.getElementById('systemStatus');
+      const videoUploadModal = document.getElementById('videoUploadModal');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const cancelUploadBtn = document.getElementById('cancelUploadBtn');
+      const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+      const dropZone = document.getElementById('dropZone');
+      const videoFileInput = document.getElementById('videoFileInput');
+      const fileInfo = document.getElementById('fileInfo');
+      const fileName = document.getElementById('fileName');
+      const fileSize = document.getElementById('fileSize');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const sceneVideo = document.getElementById('sceneVideo');
+      
+      // 打开模态窗口
+      systemStatus.addEventListener('click', function() {
+        videoUploadModal.classList.remove('hidden');
+      });
+      
+      // 关闭模态窗口
+      function closeModal() {
+        videoUploadModal.classList.add('hidden');
+        resetUploadForm();
+      }
+      
+      closeModalBtn.addEventListener('click', closeModal);
+      cancelUploadBtn.addEventListener('click', closeModal);
+      
+      // 点击或拖拽上传
+      dropZone.addEventListener('click', function() {
+        videoFileInput.click();
+      });
+      
+      // 文件选择
+      videoFileInput.addEventListener('change', function(e) {
+        handleFileSelect(e.target.files[0]);
+      });
+      
+      // 拖拽功能
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+      
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+      });
+      
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+      });
+      
+      function highlight() {
+        dropZone.classList.add('border-primary');
+      }
+      
+      function unhighlight() {
+        dropZone.classList.remove('border-primary');
+      }
+      
+      dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const file = dt.files[0];
+        handleFileSelect(file);
+      });
+      
+      // 处理文件选择
+      function handleFileSelect(file) {
+        if (file && file.type.startsWith('video/')) {
+          fileName.textContent = file.name;
+          fileSize.textContent = formatFileSize(file.size);
+          fileInfo.classList.remove('hidden');
+          confirmUploadBtn.disabled = false;
+          
+          // 模拟上传进度
+          simulateUploadProgress();
+        } else {
+          alert('请选择有效的视频文件');
+        }
+      }
+      
+      // 格式化文件大小
+      function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      }
+      
+      // 模拟上传进度
+      function simulateUploadProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += Math.random() * 10;
+          if (progress >= 100) {
+            progress = 100;
+            clearInterval(interval);
+          }
+          uploadProgress.style.width = progress + '%';
+        }, 200);
+      }
+      
+      // 确认上传
+      confirmUploadBtn.addEventListener('click', function() {
+        // 在实际应用中，这里会处理文件上传
+        // 这里我们模拟直接使用选择的文件
+        const file = videoFileInput.files[0];
+        if (file) {
+          const videoURL = URL.createObjectURL(file);
+          sceneVideo.src = videoURL;
+          sceneVideo.load();
+          
+          // 清空动态场景元素
+          const dynamicScene = document.getElementById('dynamicScene');
+          if (dynamicScene) {
+            dynamicScene.innerHTML = '';
+          }
+          
+          sceneVideo.play().catch(error => {
+            console.log('视频播放失败:', error);
+          });
+          
+          // 启动速度动画
+          animateSpeed();
+          
+          closeModal();
+          alert('视频上传成功并开始播放');
+        }
+      });
+      
+      // 重置上传表单
+      function resetUploadForm() {
+        videoFileInput.value = '';
+        fileInfo.classList.add('hidden');
+        confirmUploadBtn.disabled = true;
+        uploadProgress.style.width = '0%';
+        dropZone.classList.remove('border-primary');
+      }
+      
+      // 启动数据更新
+      updateSimulationData();
+      
+      // 初始化动态场景（但不启动动画）
+      const dynamicScene = document.getElementById('dynamicScene');
+      if (dynamicScene) {
+        dynamicScene.innerHTML = '';
+      }
+    });
+  </script>
+
+</body></html>

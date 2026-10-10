@@ -1,0 +1,279 @@
+/* ============================================================================
+   车机实时数据面板 · 样式（真实 ROS 数据）
+   与 theme.css 同一套仪器语言：直角、发丝线、等宽读数、状态点
+   ========================================================================== */
+/* 已按要求移除首个面板的左侧彩边 */
+
+/* ---- LIVE 标记（只给真实数据面板打，不给演示内容打） ---- */
+.cx-livebadge {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-left: 8px; padding: 1px 7px;
+    font-family: var(--cx-mono); font-size: 9px; letter-spacing: .18em;
+    color: #2EE59D; background: rgba(46, 229, 157, .08);
+    border: 1px solid rgba(46, 229, 157, .3);
+    vertical-align: middle;
+}
+.cx-livebadge i {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--cx-gr); box-shadow: 0 0 6px var(--cx-gr);
+}
+.cx-livebadge.is-bad { color: #E87A6A; background: rgba(217, 58, 58, .08); border-color: rgba(217, 58, 58, .32); }
+.cx-livebadge.is-bad i { background: var(--cx-rd); box-shadow: 0 0 6px var(--cx-rd); }
+
+/* ---- 面板通用头 ---- */
+.cx-live__head {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid var(--cx-hair);
+}
+.cx-live__title { display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 500; color: #F2F2F5; }
+.cx-live__dot { width: 7px; height: 7px; border-radius: 50%; background: #45454F; transition: background .3s, box-shadow .3s; }
+.cx-live.is-ok .cx-live__dot { background: var(--cx-gr); box-shadow: 0 0 9px var(--cx-gr); }
+.cx-live.is-bad .cx-live__dot { background: var(--cx-rd); box-shadow: 0 0 9px var(--cx-rd); }
+/* 连接中 / 未连接 → 红（用户要求：不允许灰着像正常状态） */
+.cx-live__state { font-family: var(--cx-mono); font-size: 10px; letter-spacing: .18em; color: #E0574A; font-weight: 500; }
+.cx-live__meta { font-family: var(--cx-mono); font-size: 10px; letter-spacing: .12em; color: var(--cx-tx-l); }
+.cx-live__meta b { color: var(--cx-cy-l); font-weight: 500; }
+
+.cx-live__grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(268px, 1fr)); }
+.cx-live__box { background: rgba(7, 7, 9, .55); border: 1px solid var(--cx-hair); padding: 12px 14px 14px; }
+.cx-live__boxhd {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--cx-mono); font-size: 10px; letter-spacing: .2em; color: var(--cx-tx-l);
+    padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid var(--cx-hair-s);
+}
+.cx-live__boxhd i { width: 4px; height: 4px; border-radius: 50%; background: var(--cx-cy); box-shadow: 0 0 7px var(--cx-cy); }
+
+/* ---- 读数行 ---- */
+.cx-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 3px 0; }
+.cx-row__k { font-size: 12px; color: var(--cx-tx-m); white-space: nowrap; }
+.cx-row__v {
+    font-family: var(--cx-mono); font-size: 13px; color: #F2F2F5;
+    display: inline-flex; align-items: baseline; gap: 3px; transition: color .45s ease;
+}
+.cx-row__v u { font-size: 9px; color: var(--cx-tx-l); text-decoration: none; }
+.cx-row__v.is-tick { color: var(--cx-cy); }
+
+.cx-big { display: flex; gap: 6px; margin-bottom: 6px; }
+.cx-big__c { flex: 1; text-align: center; background: rgba(158, 168, 182, 0.040); border: 1px solid var(--cx-hair-s); padding: 8px 4px 6px; }
+.cx-big__n { font-family: var(--cx-mono); font-size: 19px; color: #F2F2F5; line-height: 1.1; transition: color .45s ease; }
+.cx-big__n.is-tick { color: var(--cx-cy); }
+.cx-big__u { font-family: var(--cx-mono); font-size: 9px; color: var(--cx-tx-l); }
+.cx-big__l { font-size: 11px; color: var(--cx-tx-m); margin-top: 3px; }
+
+.cx-bar { position: relative; height: 3px; margin-top: 6px; background: rgba(158, 168, 182, .10); }
+.cx-bar i {
+    position: absolute; top: 0; bottom: 0; left: 50%;
+    background: var(--cx-cy); box-shadow: 0 0 6px var(--cx-cy);
+    transition: width .25s linear, left .25s linear, background .25s;
+}
+
+.cx-live__warn {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; padding: 7px 10px;
+    background: rgba(224, 87, 74, .09); border: 1px solid rgba(224, 87, 74, .38);
+    font-size: 11px; color: #E0574A;
+    border-left: none;
+}
+.cx-live__warn.is-ok { background: rgba(46, 229, 157, .07); border-color: rgba(46, 229, 157, .3); color: #2EE59D; }
+
+.cx-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 3px 0; font-family: var(--cx-mono); font-size: 10px; color: var(--cx-tx-l); }
+.cx-link__n { color: var(--cx-tx-m); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cx-link__s { white-space: nowrap; }
+.cx-link.is-ok .cx-link__s { color: var(--cx-gr); }
+.cx-link.is-bad .cx-link__s { color: var(--cx-rd); }
+
+/* ======================================================================
+   通用仪器表格
+   ====================================================================== */
+.cx-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cx-tbl th {
+    font-family: var(--cx-mono); font-size: 9px; letter-spacing: .16em;
+    color: var(--cx-tx-l); text-align: left; font-weight: 400;
+    padding: 7px 10px; border-bottom: 1px solid var(--cx-hair);
+    background: rgba(158, 168, 182, 0.028); white-space: nowrap;
+}
+.cx-tbl td {
+    padding: 7px 10px; border-bottom: 1px solid var(--cx-hair-s);
+    color: var(--cx-tx); vertical-align: middle;
+}
+.cx-tbl tbody tr { transition: background .18s, box-shadow .18s; }
+.cx-tbl tbody tr:hover { background: rgba(158, 168, 182, 0.050); box-shadow: inset 2px 0 0 var(--cx-cy); }
+.cx-tbl .mono { font-family: var(--cx-mono); font-size: 11px; }
+.cx-tbl .dim { color: var(--cx-tx-l); }
+.cx-tbl .nw { white-space: nowrap; }
+.cx-tbl tbody tr.clickable { cursor: pointer; }
+
+/* 等级色 */
+.cx-lv { font-family: var(--cx-mono); font-size: 10px; padding: 1px 6px; border: 1px solid; white-space: nowrap; }
+.cx-lv--0 { color: #2EE59D; border-color: rgba(46, 229, 157, .35); background: rgba(46, 229, 157, .07); }
+.cx-lv--1 { color: #2EE59D; border-color: rgba(158, 168, 182, .35); background: rgba(158, 168, 182, 0.070); }
+.cx-lv--2 { color: #3D9BFF; border-color: rgba(158, 168, 182, .4); background: rgba(158, 168, 182, 0.090); }
+.cx-lv--3 { color: #E87A6A; border-color: rgba(217, 58, 58, .45); background: rgba(217, 58, 58, .1); }
+
+/* ---- 顶部车机实时状态带 ---- */
+.cx-strip-live {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 0 20px;
+    padding: 9px 14px; margin-bottom: 16px;
+    border: 1px solid var(--cx-hair);
+    background: linear-gradient(90deg, rgba(158, 168, 182, 0.050), rgba(158, 168, 182, 0.000) 46%);
+    font-family: var(--cx-mono); font-size: 10px; letter-spacing: .12em;
+    color: var(--cx-tx-l);
+}
+.cx-strip-live__i { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.cx-strip-live__i b { color: var(--cx-cy-l); font-weight: 500; }
+.cx-strip-live__i em { font-style: normal; color: var(--cx-gr); }
+.cx-strip-live__i u { text-decoration: none; color: var(--cx-rd); }
+.cx-strip-live__sp { flex: 1 1 40px; min-width: 20px; }
+
+/* ---- 过滤器按钮 ---- */
+.cx-filters { display: flex; gap: 7px; flex-wrap: wrap; }
+.cx-filters button {
+    font-family: var(--cx-mono); font-size: 10px; letter-spacing: .12em;
+    padding: 4px 11px; border: 1px solid var(--cx-hair);
+    background: rgba(7, 7, 9, .6); color: var(--cx-tx-m); cursor: pointer;
+    transition: all .2s;
+}
+.cx-filters button:hover { border-color: rgba(158, 168, 182, .45); color: #F2F2F5; }
+.cx-filters button.on { background: rgba(158, 168, 182, .12); border-color: rgba(158, 168, 182, .55); color: #F2F2F5; }
+
+/* ---- 传感器在线矩阵 ---- */
+.cx-sensors { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+.cx-sensor { background: rgba(7, 7, 9, .55); border: 1px solid var(--cx-hair); padding: 10px 12px; }
+.cx-sensor.is-ok { }
+.cx-sensor.is-bad { }
+.cx-sensor.is-part { }
+.cx-sensor__h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+.cx-sensor__n { font-family: var(--cx-mono); font-size: 11px; letter-spacing: .16em; color: #F2F2F5; }
+.cx-sensor__r { font-family: var(--cx-mono); font-size: 10px; color: var(--cx-tx-l); }
+.cx-sensor__t { display: flex; flex-direction: column; gap: 2px; }
+.cx-sensor__row { display: flex; justify-content: space-between; gap: 6px; font-family: var(--cx-mono); font-size: 10px; color: var(--cx-tx-l); }
+.cx-sensor__row span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cx-sensor__row.ok span:last-child { color: var(--cx-gr); }
+.cx-sensor__row.bad span:last-child { color: var(--cx-rd); }
+
+/* ---- 定位读数 ---- */
+.cx-locgrid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* ---- 图表容器 ---- */
+.cx-charts { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.cx-chartbox { background: rgba(7, 7, 9, .55); border: 1px solid var(--cx-hair); padding: 10px 12px 6px; }
+.cx-chartbox__h {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: var(--cx-mono); font-size: 10px; letter-spacing: .18em;
+    color: var(--cx-tx-l); margin-bottom: 6px;
+}
+.cx-chartbox canvas { width: 100% !important; height: 168px !important; }
+
+/* ---- 配置行 ---- */
+.cx-cfg { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--cx-hair-s); }
+.cx-cfg__k { font-size: 12px; color: var(--cx-tx-m); }
+.cx-cfg__v { font-family: var(--cx-mono); font-size: 12px; color: #F2F2F5; word-break: break-all; text-align: right; }
+.cx-cfg code {
+    font-family: var(--cx-mono); font-size: 11px; color: var(--cx-cy-l);
+    background: rgba(7, 7, 9, .7); border: 1px solid var(--cx-hair-s);
+    padding: 2px 7px; display: inline-block; margin: 2px 0;
+}
+
+/* ---- 展开的字段详情 ---- */
+.cx-detail { background: rgba(7, 7, 9, .8); border: 1px solid var(--cx-hair); padding: 10px 12px; }
+.cx-detail__t { font-family: var(--cx-mono); font-size: 10px; letter-spacing: .16em; color: var(--cx-cy-l); margin-bottom: 8px; }
+.cx-detail__cols { display: grid; gap: 4px 18px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.cx-detail__f { display: flex; justify-content: space-between; gap: 8px; font-family: var(--cx-mono); font-size: 10px; }
+.cx-detail__f em { font-style: normal; color: var(--cx-tx-l); }
+.cx-detail__f span { color: #F2F2F5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 640px) {
+    .cx-live__meta { display: none; }
+    .cx-tbl th:nth-child(n+5), .cx-tbl td:nth-child(n+5) { display: none; }
+}
+
+/* ===== 安全绿 · 发亮点缀（正常 / 在线 / 通过 / 安全） ===== */
+:root {
+    --cx-ok: #2EE59D;
+    --cx-ok-d: #1AA876;
+    --cx-ok-glow: rgba(46, 229, 157, .78);
+    --cx-ok-soft: rgba(46, 229, 157, .34);
+}
+/* 状态点：绿芯 + 外发光 */
+.cx-live__dot, .cx-livebadge i, .cx-tile__dot {
+    background: var(--cx-ok) !important;
+    box-shadow: 0 0 8px var(--cx-ok-glow), 0 0 18px var(--cx-ok-soft) !important;
+}
+/* 正向文字：绿 + 轻发光 */
+.text-secondary, .text-green-400, .text-emerald-400, .text-teal-400 {
+    color: var(--cx-ok) !important;
+    text-shadow: 0 0 10px var(--cx-ok-soft);
+}
+/* 正向底块：绿晕 */
+.bg-green-500, .bg-emerald-500, .bg-secondary {
+    box-shadow: 0 0 16px var(--cx-ok-soft);
+}
+/* 在线 / 通过 徽标 */
+.cx-ok, .cx-livebadge[data-ok] {
+    color: var(--cx-ok) !important;
+    text-shadow: 0 0 10px var(--cx-ok-soft);
+}
+
+/* ---- 告警 / 说明 两级提示 ---- */
+/* 默认（告警）：红 */
+.cx-live__warn i { color: #E0574A; }
+/* 说明性提示：中性灰，别把"解码依据"这类也标成错误 */
+.cx-live__warn.is-info {
+    background: rgba(158, 168, 182, .07);
+    border-color: rgba(158, 168, 182, .28);
+    color: #9A9AA5;
+}
+.cx-live__warn.is-info i { color: #9A9AA5; }
+/* 状态文字：链路异常时也变红 */
+.cx-live.is-bad .cx-live__state { color: #E0574A; }
+.cx-live.is-ok  .cx-live__state { color: var(--cx-gr); }
+
+
+/* ==================== CX-MOTION · 科技动感（局部 / 不遮挡 / 不闪烁） ==================== */
+
+/* 2) 在线状态点：轻微呼吸（只在热元素上） */
+@keyframes cx-breathe {
+    0%, 100% { box-shadow: 0 0 6px var(--cx-ok-glow), 0 0 12px var(--cx-ok-soft); }
+    50%      { box-shadow: 0 0 11px var(--cx-ok-glow), 0 0 26px var(--cx-ok-soft); }
+}
+.cx-live.is-ok .cx-live__dot,
+.cx-live__boxhd i { animation: cx-breathe 2.8s ease-in-out infinite; }
+
+/* 3) 实时数值跳动：一次性的短促高亮（由 JS 加 .is-tick） */
+.cx-row__v.is-tick, .cx-big__n.is-tick {
+    color: #FFFFFF;
+    text-shadow: 0 0 12px rgba(61, 155, 255, .75);
+}
+
+/* 4) 侧栏项：悬停时左侧出现一道细光（用户触发，非常驻） */
+.page-content ~ * { }
+nav a { position: relative; }
+nav a::before {
+    content: ''; position: absolute; left: 0; top: 50%; width: 2px; height: 0;
+    background: #3D9BFF; transform: translateY(-50%);
+    transition: height .22s cubic-bezier(.2,.7,.3,1), box-shadow .22s;
+}
+nav a:hover::before { height: 62%; box-shadow: 0 0 8px rgba(61,155,255,.8); }
+
+/* 5) 尊重系统减少动态效果 */
+@media (prefers-reduced-motion: reduce) {
+    .page-content .card::after { animation: none; opacity: 0; }
+    .cx-live.is-ok .cx-live__dot, .cx-live__boxhd i { animation: none; }
+    nav a::before { transition: none; }
+}
+
+/* ===== CX-INK · 全站墨色强制覆盖（清除暖底总闸） ===== */
+/* Tailwind Play CDN 未按 config 解析 dark-* 色阶，会渲染出暖褐底，
+   这里对五个色阶全部强制中性值，不限定 .page-content，侧栏与顶栏一并覆盖。 */
+.bg-dark-100 { background-color: #131316 !important; }
+.bg-dark-200 { background-color: #0F0F12 !important; }
+.bg-dark-300 { background-color: #0A0A0C !important; }
+.bg-dark-400 { background-color: #070709 !important; }
+.bg-dark-500 { background-color: #050506 !important; }
+/* 半透明变体 */
+.bg-dark-200\/50, .bg-dark-300\/50 { background-color: rgba(15,15,18,.5) !important; }
+
+/* CX-CARD · 卡片底色兜底（.card 走 @apply，不受 .bg-dark-* 覆盖影响） */
+.card { background-color: #0F0F12 !important; }
