@@ -159,6 +159,8 @@ class CanReader(threading.Thread):
         self.total = 0
         self.stop_flag = False
         self.opened = False          # 本次 _read 是否已经成功打开设备（看门狗用）
+        self.ch2 = False             # 通道 1（电池 CAN）是否可用
+        self.chan_of = {}            # id -> 来源通道（0/1），仅排查用   # ==== CX-DUALCH BEGIN ====
 
     def snapshot(self):
         with self.lock:
@@ -166,11 +168,13 @@ class CanReader(threading.Thread):
             return {
                 'ok': self.ok, 'err': self.err, 'board': self.board,
                 'hz_total': round(self.hz_total, 1), 'total': self.total,
+                'ch2': self.ch2,
                 'frames': OrderedDict(
                     (k, {'data': bytes(bytearray(v)).hex(' ').upper(),
                          'len': len(v),
                          'hz': round(self.stat[k]['hz'], 1),
                          'changed': self.stat[k]['changed'],
+                         'ch': self.chan_of.get(k, 0),
                          'age': round(now - self.stat[k]['last_t'], 2)})
                     for k, v in self.frames.items()),
             }
@@ -237,44 +241,77 @@ class CanReader(threading.Thread):
             raise IOError('启动 CAN 失败')
         dll.VCI_ClearBuffer(DEVTYPE, DEVINDEX, 0)
 
+        # ---- 通道 1：电池 CAN（OBD 1/9）。打不开就降级为单通道，不影响通道 0。
+        ch2 = False
+        try:
+            if dll.VCI_InitCAN(DEVTYPE, DEVINDEX, 1, byref(cfg)) == 1:
+                if dll.VCI_StartCAN(DEVTYPE, DEVINDEX, 1) == 1:
+                    dll.VCI_ClearBuffer(DEVTYPE, DEVINDEX, 1)
+                    ch2 = True
+        except Exception:
+            ch2 = False
+        self.ch2 = ch2
+        print(u'  [CAN] 通道1(整车 CAN) 已启动; 通道2(电池 CAN) %s' % (
+            u'已启动' if ch2 else u'不可用（未接线或设备不支持），降级为单通道'))
+
         with self.lock:
             self.ok = True
             self.err = ''
             self.board = '%s (DeviceType=%d)' % (board, DEVTYPE)
         self.opened = True
 
-        buf = (VCI_CAN_OBJ * 2000)()
+        def ingest(ch, objs, cnt, now):
+            """把某一通道收到的一批帧记入统计表。ch=0 键名原样，ch=1 键名加 @2。"""
+            got = 0
+            with self.lock:
+                for i in range(cnt):
+                    o = objs[i]
+                    cid = '%03X' % (o.ID & 0x7FF) if not o.ExternFlag else '%08X' % o.ID
+                    b = bytes(bytearray(o.Data))[:o.DataLen]
+                    # 记录来源通道（仅排查用）。★不加后缀★：见文件头那段说明 ——
+                    # ControlCAN.dll 双通道下数据落到哪个通道不确定，加后缀会把
+                    # 整车数据误标成电池通道，并让 decode() 查不到 ID。
+                    self.chan_of[cid] = ch
+                    st = self.stat.get(cid)
+                    if st is None:
+                        self.stat[cid] = st = {'cnt': 0, 'hz': 0.0,
+                                               'last_t': now, 'changed': 0}
+                    elif self.frames.get(cid) is not None:
+                        old = self.frames[cid]
+                        c = st['changed']
+                        for k in range(min(len(old), len(b))):
+                            if old[k] != b[k]:
+                                c += 1
+                        st['changed'] = c
+                    st['cnt'] += 1
+                    st['last_t'] = now
+                    self.frames[cid] = b
+                    self.total += 1
+                    got += 1
+            return got
+
+        buf0 = (VCI_CAN_OBJ * 2000)()
+        buf1 = (VCI_CAN_OBJ * 2000)()
         win_t, win_n = time.time(), 0
         while not self.stop_flag:
-            n = dll.VCI_Receive(DEVTYPE, DEVINDEX, 0, buf, 2000, 50)
+            # 两个通道各等 5ms（合计 10ms），既不互相饿死也不会把吞吐砍半
+            n0 = dll.VCI_Receive(DEVTYPE, DEVINDEX, 0, buf0, 2000, 5)
+            n1 = 0
+            if ch2:
+                n1 = dll.VCI_Receive(DEVTYPE, DEVINDEX, 1, buf1, 2000, 5)
             now = time.time()
-            if n > 0:
-                with self.lock:
-                    for i in range(n):
-                        o = buf[i]
-                        cid = '%03X' % (o.ID & 0x7FF) if not o.ExternFlag else '%08X' % o.ID
-                        b = bytes(bytearray(o.Data))[:o.DataLen]
-                        st = self.stat.get(cid)
-                        if st is None:
-                            self.stat[cid] = st = {'cnt': 0, 'hz': 0.0,
-                                                   'last_t': now, 'changed': 0}
-                        elif self.frames.get(cid) is not None:
-                            old = self.frames[cid]
-                            c = st['changed']
-                            for k in range(min(len(old), len(b))):
-                                if old[k] != b[k]:
-                                    c += 1
-                            st['changed'] = c
-                        st['cnt'] += 1
-                        st['last_t'] = now
-                        self.frames[cid] = b
-                        self.total += 1
-                        win_n += 1
-                    if now - win_t >= 2.0:
-                        self.hz_total = win_n / (now - win_t)
-                        for cid, st in self.stat.items():
-                            st['hz'] = st['cnt'] / max(0.001, now - _BOOT)
-                        win_t, win_n = now, 0
+            got = 0
+            if n0 > 0:
+                got += ingest(0, buf0, n0, now)
+            if n1 > 0:
+                got += ingest(1, buf1, n1, now)
+            if got:
+                win_n += got
+                if now - win_t >= 2.0:
+                    self.hz_total = win_n / (now - win_t)
+                    for cid, st in self.stat.items():
+                        st['hz'] = st['cnt'] / max(0.001, now - _BOOT)
+                    win_t, win_n = now, 0
 
     # ------- 取某个 ID 的当前字节
     def b(self, cid):
@@ -311,6 +348,11 @@ def decode():
     b205 = READER.b('205')
     b668 = READER.b('668')
     b618 = READER.b('618')
+    b338 = READER.b('338')     # 电池：SOC
+    b636 = READER.b('636')     # 电池：总压
+    b45A = READER.b('45A')     # 电池：总压备份
+    b264 = READER.b('264')     # 电池：温度
+    b235 = READER.b('235')     # 电池：电流/辅助量
 
     # 车速：Can_32A byte2-3 大端；实测静止基线 = 1
     if b32:
@@ -374,6 +416,27 @@ def decode():
     # 刹车灯：Can_618
     if b618:
         r['brake_light_raw'] = b618[2]
+
+    # ---------------- 电池（BMS）----------------
+    # ★原 decode 表里没有电池，下面几条是 2026-10-11 用「激励—观测」实测确认的：
+    #   0x636 byte0-1 与 0x45A byte2-3 均为 0x0FA0=4000 ⇒ 400.0 V（双报文印证）
+    #   0x338 byte4 = 51，与仪表盘 SOC 51% 一致；15 分钟内 52→51 单调下降
+    #   0x264 byte2 = 15→17→19→20 ℃，随车动作单调上升
+    #   0x235 byte2 静止 0、给油 391/1428；byte5-6 含义未确认，不冒充电压
+    #   本平台无官方 DBC，换算系数按行业惯例，信号名未经厂商确认。
+    if b636:
+        r['pack_voltage'] = round(((b636[0] << 8) | b636[1]) * 0.1, 1)
+        r['pack_voltage_basis'] = 'Can_636 byte0-1 x0.1（与 Can_45A byte2-3 一致）'
+    if b45A:
+        r['pack_voltage_alt'] = round(((b45A[2] << 8) | b45A[3]) * 0.1, 1)
+    if b338:
+        r['soc_percent'] = b338[4]
+        r['soc_basis'] = 'Can_338 byte4 原值 %（与仪表盘 51% 实测一致）'
+    if b264:
+        r['battery_temp_c'] = b264[2]
+    if b235:
+        r['battery_current_raw'] = b235[2]
+        r['battery_aux_raw'] = (b235[5] << 8) | b235[6]
 
     return r
 
